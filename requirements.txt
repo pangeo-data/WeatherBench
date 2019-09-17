@@ -1,0 +1,6 @@
+python>=3.6
+xarray
+xesmf
+fire
+numpy
+cdsapi
