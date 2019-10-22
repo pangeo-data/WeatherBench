@@ -9,12 +9,14 @@ def regrid(
         ds_in,
         ddeg_out,
         method='bilinear',
+        reuse_weights=True
 ):
     """
     Regrid horizontally.
     :param ds_in: Input xarray dataset
     :param ddeg_out: Output resolution
-    :param method: Rgridding method
+    :param method: Regridding method
+    :param reuse_weights: Reuse weights for regridding
     :return: ds_out: Regridded dataset
     """
     # Rename to ESMF compatible coordinates
@@ -23,14 +25,14 @@ def regrid(
     # Create output grid
     grid_out = xr.Dataset(
         {
-            'lat': (['lat'], np.arange(-90+ddeg_out/2, 90+ddeg_out, ddeg_out)),
+            'lat': (['lat'], np.arange(-90+ddeg_out/2, 90, ddeg_out)),
             'lon': (['lon'], np.arange(0, 360, ddeg_out)),
         }
     )
 
     # Create regridder
     regridder = xe.Regridder(
-        ds_in, grid_out, method, periodic=True, reuse_weights=True
+        ds_in, grid_out, method, periodic=True, reuse_weights=reuse_weights
     )
 
     # Hack to speed up regridding of large files
@@ -57,6 +59,7 @@ def main(
         output_dir,
         ddeg_out,
         method='bilinear',
+        reuse_weights=True,
         custom_fn=None,
 ):
     """
@@ -64,6 +67,7 @@ def main(
     :param output_dir: Output directory
     :param ddeg_out: Output resolution
     :param method: Regridding method
+    :param reuse_weights: Reuse weights for regridding
     :param custom_fn: If not None, use custom file name. Otherwise infer from parameters.
     """
     # Make sure output directory exists
@@ -75,7 +79,7 @@ def main(
     for fn in input_fns:
         print(f'Regridding file: {fn}')
         ds_in = xr.open_dataset(fn)
-        ds_out = regrid(ds_in, ddeg_out, method)
+        ds_out = regrid(ds_in, ddeg_out, method, reuse_weights)
         fn_out = (
             custom_fn or
             '_'.join(fn.split('/')[-1][:-3].split('_')[:-1]) + '_' + str(ddeg_out) + 'deg.nc'
@@ -107,6 +111,12 @@ if __name__ == '__main__':
         required=True
     )
     parser.add_argument(
+        '--reuse_weights',
+        type=int,
+        help="Reuse weights for regridding. 0 or 1 (default)",
+        default=1  
+    )
+    parser.add_argument(
         '--custom_fn',
         type=str,
         help="If not None, use custom file name. Otherwise infer from parameters.",
@@ -118,6 +128,7 @@ if __name__ == '__main__':
         input_fns=args.input_fns,
         output_dir=args.output_dir,
         ddeg_out=args.ddeg_out,
+        reuse_weights=args.reuse_weights,
         custom_fn=args.custom_fn,
     )
 
