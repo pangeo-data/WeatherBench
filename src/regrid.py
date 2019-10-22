@@ -23,7 +23,7 @@ def regrid(
     # Create output grid
     grid_out = xr.Dataset(
         {
-            'lat': (['lat'], np.arange(-90, 90+ddeg_out, ddeg_out)),
+            'lat': (['lat'], np.arange(-90+ddeg_out/2, 90+ddeg_out, ddeg_out)),
             'lon': (['lon'], np.arange(0, 360, ddeg_out)),
         }
     )
