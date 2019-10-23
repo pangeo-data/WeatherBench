@@ -24,4 +24,12 @@ def load_test_data(path, var='z'):
     ds = xr.open_mfdataset(f'{path}/*.nc')[var]
     return ds.sel(time=slice('2017', '2018'))
 
+def evaluate_iterative_forecast(fc_iter, da_valid):
+    rmses = []
+    for lead_time in fc_iter.lead_time:
+        fc = fc_iter.sel(lead_time=lead_time)
+        fc['time'] = fc.time + np.timedelta64(int(lead_time), 'h')
+        rmses.append(compute_weighted_rmse(fc, da_valid).values)
+    return xr.DataArray(rmses, dims=['lead_time'], coords={'lead_time': fc_iter.lead_time})
+
 

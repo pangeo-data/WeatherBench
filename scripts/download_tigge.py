@@ -3,7 +3,7 @@ server = ECMWFDataServer()
 server.retrieve({
     "class": "ti",
     "dataset": "tigge",
-    "date": "2016-01-01/to/2016-01-03",
+    "date": "2017-01-01/to/2017-12-31",
     "expver": "prod",
     "grid": "0.5/0.5",
     "levelist": "500",
@@ -13,5 +13,5 @@ server.retrieve({
     "step": "0/6/12/18/24/30/36/42/48/54/60/66/72/78/84/90/96/102/108/114/120",
     "time": "00:00:00/12:00:00",
     "type": "cf",
-    "target": "/data/weather-benchmark/tigge/z500.nc",
+    "target": "/data/weather-benchmark/tigge/z500_2017.grib",
 })
