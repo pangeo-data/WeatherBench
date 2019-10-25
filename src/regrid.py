@@ -20,7 +20,8 @@ def regrid(
     :return: ds_out: Regridded dataset
     """
     # Rename to ESMF compatible coordinates
-    ds_in = ds_in.rename({'latitude': 'lat', 'longitude': 'lon'})
+    if 'latitude' in ds_in.coords:
+        ds_in = ds_in.rename({'latitude': 'lat', 'longitude': 'lon'})
 
     # Create output grid
     grid_out = xr.Dataset(
