@@ -28,10 +28,10 @@ python ../src/train_nn.py \
 [32,64,64,64,64,32,1] \
 [5,5,5,5,5,5,5]
 
-python ../src/train_nn.py \
-/data/weather-benchmark/5.625deg/geopotential_500/ \
-/data/weather-benchmark/predictions/fc_cnn_6h_iter.nc \
-6 \
-[32,64,64,64,64,32,1] \
-[5,5,5,5,5,5,5] \
---iterative True
+#python ../src/train_nn.py \
+#/data/weather-benchmark/5.625deg/geopotential_500/ \
+#/data/weather-benchmark/predictions/fc_cnn_6h_iter.nc \
+#6 \
+#[32,64,64,64,64,32,1] \
+#[5,5,5,5,5,5,5] \
+#--iterative True
