@@ -1,0 +1,19 @@
+datadir: /data/weather-benchmark
+name: temperature
+era_var_name: temperature
+level_type: pressure
+pressure_level:
+  - 1
+  - 10
+  - 100
+  - 200
+  - 300
+  - 400
+  - 500
+  - 600
+  - 700
+  - 850
+  - 1000
+res:
+  - 2.8125
+  - 5.625

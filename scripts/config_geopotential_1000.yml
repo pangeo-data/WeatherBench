@@ -1,0 +1,9 @@
+datadir: /data/weather-benchmark
+name: geopotential_1000
+era_var_name: geopotential
+level_type: pressure
+pressure_level: 1000
+res:
+  - 1.40625
+  - 2.8125
+  - 5.625
