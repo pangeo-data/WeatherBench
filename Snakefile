@@ -10,11 +10,11 @@ rule download:
     output:
           "{dataset}/raw/{name}/{name}_{year}_raw.nc",
     shell:
-         "python src/download.py separate \
+         "python src/download.py single \
             --variable {config[era_var_name]} \
             --level_type {config[level_type]} \
             --pressure_level {config[pressure_level]} \
-            --output_dir {wildcards.dataset}/raw/ \
+            --output_dir {wildcards.dataset}/raw/{wildcards.name} \
             --custom_fn {wildcards.name}_{wildcards.year}_raw.nc \
             --years {wildcards.year}"
 
