@@ -1,6 +1,6 @@
 datadir: /media/rasp/Elements/weather-benchmark
-name: temperature
-era_var_name: temperature
+name: specific_humidity
+era_var_name: specific_humidity
 level_type: pressure
 pressure_level:
   - 1

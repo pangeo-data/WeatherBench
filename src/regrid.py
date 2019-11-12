@@ -62,6 +62,7 @@ def main(
         method='bilinear',
         reuse_weights=True,
         custom_fn=None,
+        file_ending='nc'
 ):
     """
     :param input_fns: Input files. Can use *. If more than one, loop over them
@@ -70,6 +71,7 @@ def main(
     :param method: Regridding method
     :param reuse_weights: Reuse weights for regridding
     :param custom_fn: If not None, use custom file name. Otherwise infer from parameters.
+    :param file_ending: Default = nc
     """
     # Make sure output directory exists
     os.makedirs(output_dir, exist_ok=True)
@@ -83,7 +85,7 @@ def main(
         ds_out = regrid(ds_in, ddeg_out, method, reuse_weights)
         fn_out = (
             custom_fn or
-            '_'.join(fn.split('/')[-1][:-3].split('_')[:-1]) + '_' + str(ddeg_out) + 'deg.nc'
+            '_'.join(fn.split('/')[-1][:-3].split('_')[:-1]) + '_' + str(ddeg_out) + 'deg.' + file_ending
         )
         print(f"Saving file: {output_dir + '/' + fn_out}")
         ds_out.to_netcdf(output_dir + '/' + fn_out)
@@ -123,6 +125,12 @@ if __name__ == '__main__':
         help="If not None, use custom file name. Otherwise infer from parameters.",
         default=None
     )
+    parser.add_argument(
+        '--file_ending',
+        type=str,
+        help="File ending. Default = nc",
+        default='nc'
+    )
     args = parser.parse_args()
 
     main(
@@ -131,6 +139,7 @@ if __name__ == '__main__':
         ddeg_out=args.ddeg_out,
         reuse_weights=args.reuse_weights,
         custom_fn=args.custom_fn,
+        file_ending=args.file_ending
     )
 
 

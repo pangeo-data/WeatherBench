@@ -4,7 +4,7 @@ python ../src/download.py separate \
 --variable temperature \
 --level_type pressure \
 --pressure_level 10 100 200 300 400 500 600 700 850 1000 \
---output_dir /data/weather-benchmark/raw/temperature \
+--output_dir /media/rasp/Elements/weather-benchmark \
 --years 2017
 
 # Regrid data to 5.625 degree

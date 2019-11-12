@@ -1,6 +1,6 @@
 datadir: /media/rasp/Elements/weather-benchmark
-name: temperature
-era_var_name: temperature
+name: geopotential
+era_var_name: geopotential
 level_type: pressure
 pressure_level:
   - 1

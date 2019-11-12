@@ -57,9 +57,10 @@ def download_single_file(
         'year':           year,
         'month':          month,
         'day':            day,
-        'time':           time
+        'time':           time,
+        'grid':           [0.703125, 0.703125],
     }
-    request_parameters.update({'pressure_level': pressure_level} if len(pressure_level) > 0 else {})
+    request_parameters.update({'pressure_level': pressure_level} if level_type == 'pressure' else {})
 
     c.retrieve(
         f'reanalysis-era5-{level_type}-levels',
@@ -240,7 +241,7 @@ if __name__ == '__main__':
         level_type=args.level_type,
         output_dir=args.output_dir,
         years=args.years,
-        pressure_level=args.pressure_level,
+        pressure_level=args.pressure_level or [],
         month=args.month,
         day=args.day,
         time=args.time,

@@ -1,0 +1,8 @@
+datadir: /media/rasp/Elements/weather-benchmark
+name: 2m_temperature
+era_var_name: 2m_temperature
+level_type: single
+res:
+  - 1.40625
+  - 2.8125
+  - 5.625
