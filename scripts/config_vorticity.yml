@@ -1,0 +1,20 @@
+datadir: /media/rasp/Elements/weather-benchmark
+name: vorticity
+era_var_name: vorticity
+level_type: pressure
+pressure_level:
+  - 1
+  - 10
+  - 100
+  - 200
+  - 300
+  - 400
+  - 500
+  - 600
+  - 700
+  - 850
+  - 1000
+res:
+  - 1.40625
+  - 2.8125
+  - 5.625
