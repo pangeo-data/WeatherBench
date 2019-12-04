@@ -20,9 +20,18 @@ def compute_weighted_rmse(da_fc, da_true, mean_dims=xr.ALL_DIMS):
     weights_lat /= weights_lat.mean()
     return np.sqrt(((error)**2 * weights_lat).mean(mean_dims))
 
-def load_test_data(path, var='z'):
-    ds = xr.open_mfdataset(f'{path}/*.nc')[var]
-    return ds.sel(time=slice('2017', '2018'))
+def load_test_data(path, var, years=slice('2017', '2018')):
+    """
+    Args:
+        path: Path to nc files
+        var: variable. Geopotential = 'z', Temperature = 't'
+        years: slice for time window
+
+    Returns:
+        dataset: Concatenated dataset for 2017 and 2018
+    """
+    ds = xr.open_mfdataset(f'{path}/*.nc', combine='by_coords')[var]
+    return ds.sel(time=years)
 
 def evaluate_iterative_forecast(fc_iter, da_valid):
     rmses = []
