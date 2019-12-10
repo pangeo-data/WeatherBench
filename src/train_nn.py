@@ -3,10 +3,9 @@ import numpy as np
 import xarray as xr
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow.keras.layers import Input, Conv2D, Dropout
+from tensorflow.keras.layers import Input, Dropout, Conv2D
 import tensorflow.keras.backend as K
-import fire
-
+from configargparse import ArgParser
 
 def limit_mem():
     config = tf.compat.v1.ConfigProto()
@@ -14,7 +13,54 @@ def limit_mem():
     tf.compat.v1.Session(config=config)
 
 
+class DataGenerator(keras.utils.Sequence):
+    """https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly"""
+    def __init__(self, ds, var_dict, lead_time, batch_size=32, shuffle=True, load=True, mean=None, std=None):
+
+        self.ds = ds
+        self.var_dict = var_dict
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.lead_time = lead_time
+
+        data = []
+        generic_level = xr.DataArray([1], coords={'level': [1]}, dims=['level'])
+        for var, levels in var_dict.items():
+            try:
+                data.append(ds[var].sel(level=levels))
+            except ValueError:
+                data.append(ds[var].expand_dims({'level': generic_level}, 1))
+        self.data = xr.concat(data, 'level').transpose('time', 'lat', 'lon', 'level')
+        if load: print('Loading data into RAM'); self.data.load()
+        self.mean = self.data.mean(('time', 'lat', 'lon')) if mean is None else mean
+        self.std = self.data.std('time').mean(('lat', 'lon')) if std is None else std
+        # Normalize
+        self.data = (self.data - self.mean) / self.std
+        self.n_samples = self.data.isel(time=slice(0, -lead_time)).shape[0]
+        self.valid_time = self.data.isel(time=slice(lead_time, None)).time
+
+        self.on_epoch_end()
+
+    def __len__(self):
+        'Denotes the number of batches per epoch'
+        return int(np.ceil(self.n_samples / self.batch_size))
+
+    def __getitem__(self, i):
+        'Generate one batch of data'
+        idxs = self.idxs[i * self.batch_size:(i + 1) * self.batch_size]
+        X = self.data.isel(time=idxs).values
+        y = self.data.isel(time=idxs + self.lead_time).values
+        return X, y
+
+    def on_epoch_end(self):
+        'Updates indexes after each epoch'
+        self.idxs = np.arange(self.n_samples)
+        if self.shuffle == True:
+            np.random.shuffle(self.idxs)
+
+
 class PeriodicConv2D(tf.keras.layers.Conv2D):
+    """Convolution with periodic padding in second spatial dimension (lon)"""
     def __init__(self, filters, kernel_size, **kwargs):
         assert type(kernel_size) is int, 'Periodic convolutions only works for square kernels.'
         self.pad_width = (kernel_size - 1) // 2
@@ -32,38 +78,41 @@ class PeriodicConv2D(tf.keras.layers.Conv2D):
         return super().__call__(inputs_padded, *args, **kwargs)
 
 
-def create_training_data(data_train, lead_time_h, return_valid_time=False):
-    X_train = data_train.isel(time=slice(0, -lead_time_h))
-    y_train = data_train.isel(time=slice(lead_time_h, None))
-    valid_time = y_train.time
-    if return_valid_time:
-        return X_train.values, y_train.values, valid_time
-    else:
-        return X_train.values, y_train.values
+def build_cnn(filters, kernels, input_shape, activation='elu', dr=0):
+    """Fully convolutional network"""
+    x = input = Input(shape=input_shape)
+    for f, k in zip(filters[:-1], kernels[:-1]):
+        x = PeriodicConv2D(f, k, activation=activation)(x)
+        if dr > 0: x = Dropout(dr)(x)
+    output = PeriodicConv2D(filters[-1], kernels[-1])(x)
+    return keras.models.Model(input, output)
 
 
-def create_iterative_fc(data_test, model, data_mean, data_std, lead_time_h=6, max_lead_time_h=5*24,
-                        flatten=False, nlat=32, nlon=64 ):
-    max_fc_steps = max_lead_time_h // lead_time_h
+def create_predictions(model, dg):
+    preds = model.predict_generator(dg)
+    # Unnormalize
+    preds = preds * dg.std.values + dg.mean.values
     fcs = []
-    state = data_test.values[..., None]
-    if flatten: state = state.reshape((-1, nlat*nlon))
-    for fc_step in range(max_fc_steps):
-        state = model.predict(state, batch_size=32)
-        fc = state.copy().squeeze() * data_std + data_mean
-        if flatten: fc = fc.reshape((-1, nlat, nlon))
-        fcs.append(fc)
-    fcs = xr.DataArray(
-        np.array(fcs),
-        dims=['lead_time', 'time', 'lat', 'lon'],
-        coords={
-            'lead_time': np.arange(lead_time_h, max_lead_time_h + lead_time_h, lead_time_h),
-            'time': data_test.time,
-            'lat': data_test.lat,
-            'lon': data_test.lon
-        }
-    )
-    return fcs
+    lev_idx = 0
+    for var, levels in dg.var_dict.items():
+        if levels is None:
+            fcs.append(xr.DataArray(
+                preds[:, :, :, lev_idx],
+                dims=['time', 'lat', 'lon'],
+                coords={'time': dg.valid_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon},
+                name=var
+            ))
+            lev_idx += 1
+        else:
+            nlevs = len(levels)
+            fcs.append(xr.DataArray(
+                preds[:, :, :, lev_idx:lev_idx+nlevs],
+                dims=['time', 'lat', 'lon', 'level'],
+                coords={'time': dg.valid_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon, 'level': levels},
+                name=var
+            ))
+            lev_idx += nlevs
+    return xr.merge(fcs)
 
 
 def create_cnn(filters, kernels, dropout=0., activation='elu', periodic=True):
@@ -85,64 +134,96 @@ def create_cnn(filters, kernels, dropout=0., activation='elu', periodic=True):
     return model
 
 
-
-def main(datadir, fc_save_fn, lead_time_h, filters, kernels, dropout=0., activation='elu',
-         periodic=True, lr=1e-4, batch_size=32, iterative=False):
+def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patience, model_save_fn, pred_save_fn,
+         train_years, valid_years, test_years, lead_time):
+    # Limit TF memory usage
     limit_mem()
 
-    z500 = xr.open_mfdataset(f'{datadir}*')
-    data_train = z500.z.sel(time=slice('1979', '2016'))
-    data_test = z500.z.sel(time=slice('2017', '2018'))
+    # Open dataset and create data generators
+    # TODO: Flexible input data
+    z = xr.open_mfdataset(f'{datadir}geopotential_500/*.nc', combine='by_coords')
+    t = xr.open_mfdataset(f'{datadir}temperature_850/*.nc', combine='by_coords')
+    ds = xr.merge([z, t])
 
-    # Compute mean and std for normalization
-    data_mean = data_train.mean().values
-    data_std = data_train.std('time').mean().values
+    # TODO: Flexible valid split
+    ds_train = ds.sel(time=slice(*train_years))
+    ds_valid = ds.sel(time=slice(*valid_years))
+    ds_test = ds.sel(time=slice(*test_years))
 
-    # Normalize datasets
-    data_train = (data_train - data_mean) / data_std
-    data_test = (data_test - data_mean) / data_std
-    X_train, y_train = create_training_data(data_train, lead_time_h)
-    nsamples, nlat, nlon = X_train.shape
+    dic = {var: None for var in vars}
+    dg_train = DataGenerator(ds_train, dic, lead_time, batch_size=batch_size)
+    dg_valid = DataGenerator(ds_valid, dic, lead_time, batch_size=batch_size, mean=dg_train.mean,
+                             std=dg_train.std)
+    dg_test =  DataGenerator(ds_test, dic, lead_time, batch_size=batch_size, mean=dg_train.mean,
+                             std=dg_train.std)
 
-    # Create model
-    model = create_cnn(filters, kernels, dropout, activation, periodic)
-    model.compile(keras.optimizers.Adam(lr=lr), 'mse')
+    # Build model
+    # TODO: Flexible input shapes and optimizer
+    model = build_cnn(filters, kernels, input_shape=(32, 64, len(vars)), activation=activation, dr=dr)
+    model.compile(keras.optimizers.Adam(lr), 'mse')
     print(model.summary())
 
-    # Train
-    model.fit(
-        X_train[..., None], y_train[..., None], epochs=200, batch_size=batch_size, validation_split=0.1,
-        callbacks=[tf.keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            min_delta=0,
-            patience=2,
-            verbose=1,
-            mode='auto'
-        )])
-
-    # Save model
-    # TODO: Unfortunately, with my current implementation of PeriodicConv2D saving the model is not possible.
+    # Train model
+    # TODO: Learning rate schedule
+    model.fit_generator(dg_train, epochs=1, validation_data=dg_valid,
+                      callbacks=[tf.keras.callbacks.EarlyStopping(
+                          monitor='val_loss',
+                          min_delta=0,
+                          patience=patience,
+                          verbose=1,
+                          mode='auto'
+                      )]
+                      )
+    print(f'Saving model weights: {model_save_fn}')
+    model.save_weights(model_save_fn)
 
     # Create predictions
-    if iterative:
-        fc = create_iterative_fc(data_test, model, data_mean, data_std, lead_time_h=lead_time_h,
-                                 nlat=nlat, nlon=nlon)
-        fc.to_netcdf(fc_save_fn)
-    else:
-        X_test, y_test, valid_time = create_training_data(data_test, lead_time_h, return_valid_time=True)
-        preds = model.predict(X_test[..., None], batch_size).squeeze()
-        fc = xr.DataArray(
-            preds * data_std + data_mean,
-            dims=['time', 'lat', 'lon'],
-            coords={
-                'time': valid_time,
-                'lat': data_test.lat,
-                'lon': data_test.lon
-            }
-        )
-        fc.to_netcdf(fc_save_fn)
+    pred = create_predictions(model, dg_test)
+    print(f'Saving predictions: {pred_save_fn}')
+    pred.to_netcdf(pred_save_fn)
 
+    # Print score in real units
+    # TODO: Make flexible for other states
+    z500_valid = load_test_data(f'{datadir}geopotential_500', 'z')
+    t850_valid = load_test_data(f'{datadir}temperature_850', 't')
+    valid = xr.merge([z500_valid, t850_valid])
+    print(compute_weighted_rmse(pred, valid).load())
 
 if __name__ == '__main__':
-    fire.Fire(main)
+    p = ArgParser()
+    p.add_argument('-c', '--my-config', is_config_file=True, help='config file path')
+    p.add_argument('--datadir', type=str, required=True, help='Path to data')
+    p.add_argument('--model_save_fn', type=str, required=True, help='Path to save model')
+    p.add_argument('--pred_save_fn', type=str, required=True, help='Path to save predictions')
+    p.add_argument('--vars', type=str, nargs='+', required=True, help='Variables')
+    p.add_argument('--filters', type=int, nargs='+', required=True, help='Filters for each layer')
+    p.add_argument('--kernels', type=int, nargs='+', required=True, help='Kernel size for each layer')
+    p.add_argument('--lead_time', type=int, required=True, help='Forecast lead time')
+    p.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
+    p.add_argument('--activation', type=str, default='elu', help='Activation function')
+    p.add_argument('--dr', type=float, default=0, help='Dropout rate')
+    p.add_argument('--batch_size', type=int, default=128, help='batch_size')
+    p.add_argument('--patience', type=int, default=1, help='Early stopping patience')
+    p.add_argument('--train_years', type=str, nargs='+', default=('1979', '2015'), help='Start/stop years for training')
+    p.add_argument('--valid_years', type=str, nargs='+', default=('2016', '2016'), help='Start/stop years for validation')
+    p.add_argument('--test_years', type=str, nargs='+', default=('2017', '2018'), help='Start/stop years for testing')
 
+    args = p.parse_args()
+
+    main(
+        datadir=args.datadir,
+        vars=args.vars,
+        filters=args.filters,
+        kernels=args.kernels,
+        lr=args.lr,
+        activation=args.activation,
+        dr=args.dr,
+        batch_size=args.batch_size,
+        patience=args.patience,
+        model_save_fn=args.model_save_fn,
+        pred_save_fn=args.pred_save_fn,
+        train_years=args.train_years,
+        valid_years=args.valid_years,
+        test_years=args.test_years,
+        lead_time=args.lead_time
+    )

@@ -4,3 +4,4 @@ xesmf
 fire
 numpy
 cdsapi
+configargparse
