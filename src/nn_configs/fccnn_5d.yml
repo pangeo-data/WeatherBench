@@ -1,8 +1,13 @@
 # NN config file
-datadir: /mnt/netdisk1/stephan/5.625deg/
-model_save_fn: /home/stephan/data/weather-benchmark/predictions/saved_models/fccnn_5d.h5
-pred_save_fn: /home/stephan/data/weather-benchmark/predictions/fccnn_5d.nc
+#datadir: /mnt/netdisk1/stephan/5.625deg/
+#model_save_fn: /home/stephan/data/weather-benchmark/predictions/saved_models/fccnn_5d.h5
+#pred_save_fn: /home/stephan/data/weather-benchmark/predictions/fccnn_5d.nc
+datadir: /data/weather-benchmark/5.625deg/
+model_save_fn: /data/tmp/fccnn_5d.h5
+pred_save_fn: /data/tmp/fccnn_5d.nc
 vars: [z]
 filters: [32, 64, 64, 64, 1]
 kernels: [5, 5, 5, 5, 5]
 lead_time: 120
+train_years: [2015, 2015]
+batch_size: 32

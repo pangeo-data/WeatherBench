@@ -32,8 +32,11 @@ def compute_weighted_rmse(da_fc, da_true, mean_dims=xr.ALL_DIMS):
     weights_lat = np.cos(np.deg2rad(error.lat))
     weights_lat /= weights_lat.mean()
     rmse = np.sqrt(((error)**2 * weights_lat).mean(mean_dims))
-    rename_dict = {v: v + '_rmse' for v in rmse} if type(rmse) is xr.Dataset else {rmse.name: rmse.name +'_rmse'}
-    return rmse.rename(rename_dict)
+    if type(rmse) is xr.Dataset:
+        rmse = rmse.rename({v: v + '_rmse' for v in rmse})
+    else: # DataArray
+        rmse.name = error.name + '_rmse'
+    return rmse
 
 def evaluate_iterative_forecast(fc_iter, da_valid):
     rmses = []
