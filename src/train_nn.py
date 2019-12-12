@@ -98,14 +98,15 @@ def build_cnn(filters, kernels, input_shape, activation='elu', dr=0):
 
 
 def create_predictions(model, dg):
+    """Create non-iterative predictions"""
     preds = model.predict_generator(dg)
     # Unnormalize
     preds = preds * dg.std.values + dg.mean.values
-    fcs = []
+    das = []
     lev_idx = 0
     for var, levels in dg.var_dict.items():
         if levels is None:
-            fcs.append(xr.DataArray(
+            das.append(xr.DataArray(
                 preds[:, :, :, lev_idx],
                 dims=['time', 'lat', 'lon'],
                 coords={'time': dg.valid_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon},
@@ -114,15 +115,49 @@ def create_predictions(model, dg):
             lev_idx += 1
         else:
             nlevs = len(levels)
-            fcs.append(xr.DataArray(
+            das.append(xr.DataArray(
                 preds[:, :, :, lev_idx:lev_idx+nlevs],
                 dims=['time', 'lat', 'lon', 'level'],
                 coords={'time': dg.valid_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon, 'level': levels},
                 name=var
             ))
             lev_idx += nlevs
-    return xr.merge(fcs)
+    return xr.merge(das)
 
+
+def create_iterative_predictions(model, dg, max_lead_time=5 * 24):
+    """Create iterative predictions"""
+    state = dg.data[:dg.n_samples]
+    preds = []
+    for _ in range(max_lead_time // dg.lead_time):
+        state = model.predict(state)
+        p = state * dg.std.values + dg.mean.values
+        preds.append(p)
+    preds = np.array(preds)
+
+    lead_time = np.arange(dg.lead_time, max_lead_time + dg.lead_time, dg.lead_time)
+    das = [];
+    lev_idx = 0
+    for var, levels in dg.var_dict.items():
+        if levels is None:
+            das.append(xr.DataArray(
+                preds[:, :, :, :, lev_idx],
+                dims=['lead_time', 'time', 'lat', 'lon'],
+                coords={'lead_time': lead_time, 'time': dg.valid_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon},
+                name=var
+            ))
+            lev_idx += 1
+        else:
+            nlevs = len(levels)
+            das.append(xr.DataArray(
+                preds[:, :, :, :, lev_idx:lev_idx + nlevs],
+                dims=['lead_time', 'time', 'lat', 'lon', 'level'],
+                coords={'lead_time': lead_time, 'time': dg.valid_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon,
+                        'level': levels},
+                name=var
+            ))
+            lev_idx += nlevs
+    return xr.merge(das)
 
 def create_cnn(filters, kernels, dropout=0., activation='elu', periodic=True):
     assert len(filters) == len(kernels), 'Requires same number of filters and kernel_sizes.'
@@ -144,7 +179,7 @@ def create_cnn(filters, kernels, dropout=0., activation='elu', periodic=True):
 
 
 def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patience, model_save_fn, pred_save_fn,
-         train_years, valid_years, test_years, lead_time, gpu):
+         train_years, valid_years, test_years, lead_time, gpu, iterative):
     os.environ["CUDA_VISIBLE_DEVICES"]=str(gpu)
     # Limit TF memory usage
     limit_mem()
@@ -189,7 +224,7 @@ def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patien
     model.save_weights(model_save_fn)
 
     # Create predictions
-    pred = create_predictions(model, dg_test)
+    pred = create_iterative_predictions(model, dg_test) if iterative else create_predictions(model, dg_test)
     print(f'Saving predictions: {pred_save_fn}')
     pred.to_netcdf(pred_save_fn)
 
@@ -198,7 +233,7 @@ def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patien
     z500_valid = load_test_data(f'{datadir}geopotential_500', 'z')
     t850_valid = load_test_data(f'{datadir}temperature_850', 't')
     valid = xr.merge([z500_valid, t850_valid])
-    print(compute_weighted_rmse(pred, valid).load())
+    print(evaluate_iterative_forecast(pred, valid).load() if iterative else compute_weighted_rmse(pred, valid).load())
 
 if __name__ == '__main__':
     p = ArgParser()
@@ -210,6 +245,8 @@ if __name__ == '__main__':
     p.add_argument('--filters', type=int, nargs='+', required=True, help='Filters for each layer')
     p.add_argument('--kernels', type=int, nargs='+', required=True, help='Kernel size for each layer')
     p.add_argument('--lead_time', type=int, required=True, help='Forecast lead time')
+    p.add_argument('--iterative', type=bool, default=False, help='Is iterative forecast')
+    p.add_argument('--iterative_max_lead_time', type=int, default=5*24, help='Max lead time for iterative forecasts')
     p.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
     p.add_argument('--activation', type=str, default='elu', help='Activation function')
     p.add_argument('--dr', type=float, default=0, help='Dropout rate')
@@ -237,5 +274,6 @@ if __name__ == '__main__':
         valid_years=args.valid_years,
         test_years=args.test_years,
         lead_time=args.lead_time,
-        gpu=args.gpu
+        gpu=args.gpu,
+        iterative=args.iterative
     )
