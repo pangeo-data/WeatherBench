@@ -1,16 +1,17 @@
 from score import *
+import os
 import numpy as np
 import xarray as xr
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow.keras.layers import Input, Dropout, Conv2D
+from tensorflow.keras.layers import Input, Dropout, Conv2D, Lambda
 import tensorflow.keras.backend as K
 from configargparse import ArgParser
 
 def limit_mem():
-    config = tf.compat.v1.ConfigProto()
+    config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    tf.compat.v1.Session(config=config)
+    tf.Session(config=config)
 
 
 class DataGenerator(keras.utils.Sequence):
@@ -67,14 +68,19 @@ class PeriodicConv2D(tf.keras.layers.Conv2D):
         super().__init__(filters, kernel_size, **kwargs)
         assert self.padding == 'valid', 'Periodic convolution only works for valid padding.'
         assert sum(self.strides) == 2, 'Periodic padding only works for stride (1, 1)'
-
-    def __call__(self, inputs, *args, **kwargs):
+    
+    def _pad(self, inputs):
         # Input: [samples, lat, lon, filters]
         # Periodic padding in lon direction
-        inputs_padded = K.concatenate(
+        inputs_padded = tf.concat(
             [inputs[:, :, -self.pad_width:, :], inputs, inputs[:, :, :self.pad_width, :]], axis=2)
         # Zero padding in the lat direction
         inputs_padded = tf.pad(inputs_padded, [[0, 0], [self.pad_width, self.pad_width], [0, 0], [0, 0]])
+        return inputs_padded
+
+    def __call__(self, inputs, *args, **kwargs):
+        # Unfortunate workaround necessary for TF < 1.13
+        inputs_padded = Lambda(self._pad)(inputs)
         return super().__call__(inputs_padded, *args, **kwargs)
 
 
@@ -135,7 +141,8 @@ def create_cnn(filters, kernels, dropout=0., activation='elu', periodic=True):
 
 
 def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patience, model_save_fn, pred_save_fn,
-         train_years, valid_years, test_years, lead_time):
+         train_years, valid_years, test_years, lead_time, gpu):
+    os.environ["CUDA_VISIBLE_DEVICES"]=str(gpu)
     # Limit TF memory usage
     limit_mem()
 
@@ -156,6 +163,7 @@ def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patien
                              std=dg_train.std)
     dg_test =  DataGenerator(ds_test, dic, lead_time, batch_size=batch_size, mean=dg_train.mean,
                              std=dg_train.std)
+    print(f'Mean = {dg_train.mean}; Std = {dg_train.std}')
 
     # Build model
     # TODO: Flexible input shapes and optimizer
@@ -165,7 +173,7 @@ def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patien
 
     # Train model
     # TODO: Learning rate schedule
-    model.fit_generator(dg_train, epochs=1, validation_data=dg_valid,
+    model.fit_generator(dg_train, epochs=100, validation_data=dg_valid,
                       callbacks=[tf.keras.callbacks.EarlyStopping(
                           monitor='val_loss',
                           min_delta=0,
@@ -207,7 +215,7 @@ if __name__ == '__main__':
     p.add_argument('--train_years', type=str, nargs='+', default=('1979', '2015'), help='Start/stop years for training')
     p.add_argument('--valid_years', type=str, nargs='+', default=('2016', '2016'), help='Start/stop years for validation')
     p.add_argument('--test_years', type=str, nargs='+', default=('2017', '2018'), help='Start/stop years for testing')
-
+    p.add_argument('--gpu', type=int, default=0, help='Which GPU')
     args = p.parse_args()
 
     main(
@@ -225,5 +233,6 @@ if __name__ == '__main__':
         train_years=args.train_years,
         valid_years=args.valid_years,
         test_years=args.test_years,
-        lead_time=args.lead_time
+        lead_time=args.lead_time,
+        gpu=args.gpu
     )
