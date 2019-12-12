@@ -6,3 +6,4 @@ vars: [z, t]
 filters: [32, 64, 64, 64, 2]
 kernels: [5, 5, 5, 5, 5]
 lead_time: 6
+iterative: True
