@@ -39,6 +39,7 @@ class DataGenerator(keras.utils.Sequence):
         # Normalize
         self.data = (self.data - self.mean) / self.std
         self.n_samples = self.data.isel(time=slice(0, -lead_time)).shape[0]
+        self.init_time = self.data.isel(time=slice(None, -lead_time)).time
         self.valid_time = self.data.isel(time=slice(lead_time, None)).time
 
         self.on_epoch_end()
@@ -143,7 +144,7 @@ def create_iterative_predictions(model, dg, max_lead_time=5 * 24):
             das.append(xr.DataArray(
                 preds[:, :, :, :, lev_idx],
                 dims=['lead_time', 'time', 'lat', 'lon'],
-                coords={'lead_time': lead_time, 'time': dg.valid_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon},
+                coords={'lead_time': lead_time, 'time': dg.init_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon},
                 name=var
             ))
             lev_idx += 1
@@ -152,7 +153,7 @@ def create_iterative_predictions(model, dg, max_lead_time=5 * 24):
             das.append(xr.DataArray(
                 preds[:, :, :, :, lev_idx:lev_idx + nlevs],
                 dims=['lead_time', 'time', 'lat', 'lon', 'level'],
-                coords={'lead_time': lead_time, 'time': dg.valid_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon,
+                coords={'lead_time': lead_time, 'time': dg.init_time, 'lat': dg.ds.lat, 'lon': dg.ds.lon,
                         'level': levels},
                 name=var
             ))

@@ -35,7 +35,7 @@ def compute_weighted_rmse(da_fc, da_true, mean_dims=xr.ALL_DIMS):
     if type(rmse) is xr.Dataset:
         rmse = rmse.rename({v: v + '_rmse' for v in rmse})
     else: # DataArray
-        rmse.name = error.name + '_rmse'
+        rmse.name = error.name + '_rmse' if not error.name is None else 'rmse'
     return rmse
 
 def evaluate_iterative_forecast(fc_iter, da_valid):
