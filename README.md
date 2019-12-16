@@ -1,6 +1,6 @@
 # WeatherBench: A benchmark dataset for data-driven weather forecasting
 
-Stephan Rasp, Peter D. Dueben, Sebastian Scher, Jonathan A. Weyn, and Soukayna Mouatadid
+*Stephan Rasp, Peter D. Dueben, Sebastian Scher, Jonathan A. Weyn, and Soukayna Mouatadid*
 
 If you are using this dataset please cite ???
 This paper also contains all the scientific background of the dataset. 
@@ -24,7 +24,8 @@ The raw data is from the ERA5 reanalysis archive. Information on how to download
 Because downloading the data can take a long time (several weeks), the workflow is encoded using [Snakemake](https
 ://snakemake.readthedocs.io/). See `Snakefile` and the configuration files for each variable in `scripts/config_
 {variable}.yml`. These
- files can be modified if additional variables are required.
+ files can be modified if additional variables are required. To execute Snakemake for a particular variable type
+ : `snakemake -p -j 4 all --configfile scripts/config_toa_incident_solar_radiation.yml`.
  
 In addition to the time-dependent fields, the constant fields were downloaded and processed using `scripts
 /download_and_regrid_constants.sh`

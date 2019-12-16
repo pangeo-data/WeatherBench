@@ -1,9 +1,0 @@
-python>=3.6
-xarray
-netcdf4
-dask
-xesmf
-fire
-numpy
-cdsapi
-configargparse
