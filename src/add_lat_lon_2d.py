@@ -4,47 +4,58 @@ import numpy as np
 import xesmf as xe
 from glob import glob
 import os
+import shutil
 
 def add_2d(
-        ds_in,
+        ds,
 ):
     """
     Regrid horizontally.
-    :param ds_in: Input xarray dataset
+    :param ds: Input xarray dataset
     """
-    ds_in['lat2d'] = ds_in.lat.expand_dims({'lon': ds_in.lon}).transpose()
-    ds_in['lon2d'] = ds_in.lon.expand_dims({'lat': ds_in.lat})
-    return ds_in
+    ds['lat2d'] = ds.lat.expand_dims({'lon': ds.lon}).transpose()
+    ds['lon2d'] = ds.lon.expand_dims({'lat': ds.lat})
+    return ds
+
+
+def convert_z_to_orography(ds):
+    """
+    Convert geopotential of surface to height in meters
+    Args:
+        ds: Input dataset
+    Returns:
+        ds: Same dataset with orography instead of z
+    """
+    ds['z'] = ds.z / 9.80665
+    ds = ds.rename({'z': 'orography'})
+    ds.orography.attrs['units'] = 'm'
+    return ds
 
 
 def main(
         input_fns,
-        output_dir,
         custom_fn=None,
 ):
     """
     :param input_fns: Input files. Can use *. If more than one, loop over them
-    :param output_dir: Output directory
     :param custom_fn: If not None, use custom file name. Otherwise infer from parameters.
     """
-    # Make sure output directory exists
-    os.makedirs(output_dir, exist_ok=True)
     # Get files for starred expressions
     if '*' in input_fns[0]:
         input_fns = sorted(glob(input_fns[0]))
     # Loop over input files
     for fn in input_fns:
         print(f'Extracting from file: {fn}')
-        ds_in = xr.open_dataset(fn)
-        ds_out = add_2d(ds_in)
-        # Assume name like "geopotential_1979_5.625deg.nc"
-        fn_parts = fn.split('/')[-1].split('_')
+        ds = xr.open_dataset(fn).isel(time=0).drop('time')
+        ds = convert_z_to_orography(add_2d(ds))
         fn_out = (
             custom_fn or fn
         )
-        print(f"Saving file: {output_dir + '/' + fn_out}")
-        ds_out.to_netcdf(output_dir + '/' + fn_out)
-        ds_in.close(); ds_out.close()
+        print(f"Saving file: {fn_out}")
+        ds.to_netcdf(fn_out+'.tmp')
+        ds.close()
+        shutil.move(fn_out+'.tmp', fn_out)
+
 
 if __name__ == '__main__':
 
@@ -54,12 +65,6 @@ if __name__ == '__main__':
         type=str,
         nargs='+',
         help="Input files (full path). Can use *. If more than one, loop over them",
-        required=True
-    )
-    parser.add_argument(
-        '--output_dir',
-        type=str,
-        help="Output directory",
         required=True
     )
     parser.add_argument(
@@ -73,7 +78,6 @@ if __name__ == '__main__':
 
     main(
         input_fns=args.input_fns,
-        output_dir=args.output_dir,
         custom_fn=args.custom_fn,
     )
 

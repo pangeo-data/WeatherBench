@@ -42,3 +42,9 @@ python ../src/add_lat_lon_2d.py \
 python ../src/add_lat_lon_2d.py \
 --input_fns /media/rasp/Elements/weather-benchmark/1.40625deg/constants/constants_raw.nc \
 --output_dir /media/rasp/Elements/weather-benchmark/1.40625deg/constants \
+
+# Final processing
+python ../src/add_lat_lon_2d.py \
+--input_fns /media/rasp/Elements/weather-benchmark/5.625deg/constants/constants_5.625deg.nc \
+/media/rasp/Elements/weather-benchmark/2.8125deg/constants/constants_2.8125deg.nc \
+/media/rasp/Elements/weather-benchmark/1.40625deg/constants/constants_1.40625deg.nc

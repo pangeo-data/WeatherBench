@@ -15,9 +15,20 @@ def limit_mem():
 
 
 class DataGenerator(keras.utils.Sequence):
-    """https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly"""
-
     def __init__(self, ds, var_dict, lead_time, batch_size=32, shuffle=True, load=True, mean=None, std=None):
+        """
+        Data generator for WeatherBench data.
+        Template from https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
+        Args:
+            ds: Dataset containing all variables
+            var_dict: Dictionary of the form {'var': level}. Use None for level if data is of single level
+            lead_time: Lead time in hours
+            batch_size: Batch size
+            shuffle: bool. If True, data is shuffled.
+            load: bool. If True, datadet is loaded into RAM.
+            mean: If None, compute mean from data.
+            std: If None, compute standard deviation from data.
+        """
 
         self.ds = ds
         self.var_dict = var_dict
@@ -252,7 +263,7 @@ if __name__ == '__main__':
     p.add_argument('--activation', type=str, default='elu', help='Activation function')
     p.add_argument('--dr', type=float, default=0, help='Dropout rate')
     p.add_argument('--batch_size', type=int, default=128, help='batch_size')
-    p.add_argument('--patience', type=int, default=1, help='Early stopping patience')
+    p.add_argument('--patience', type=int, default=3, help='Early stopping patience')
     p.add_argument('--train_years', type=str, nargs='+', default=('1979', '2015'), help='Start/stop years for training')
     p.add_argument('--valid_years', type=str, nargs='+', default=('2016', '2016'), help='Start/stop years for validation')
     p.add_argument('--test_years', type=str, nargs='+', default=('2017', '2018'), help='Start/stop years for testing')

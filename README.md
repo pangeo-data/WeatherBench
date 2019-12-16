@@ -1,9 +1,69 @@
-# Model replacement benchmark
+# WeatherBench: A benchmark dataset for data-driven weather forecasting
 
-## Data source: ERA5
+Stephan Rasp, Peter D. Dueben, Sebastian Scher, Jonathan A. Weyn, and Soukayna Mouatadid
 
-https://confluence.ecmwf.int/display/CKB/How+to+download+ERA5
+If you are using this dataset please cite ???
+This paper also contains all the scientific background of the dataset. 
 
-Use CDS API, follow these instructions to install: https://cds.climate.copernicus.eu/api-how-to
+This repository contains all the code for downloding and processing the data as well as code for the baseline models
+ in the paper. The data itself can be downloaded here: ???
+ 
+If you have any questions about this dataset, please use the Github issue feature on this page! 
 
-https://developers.zenodo.org/#rest-api
+## Data processing
+### Downloading and processing the raw data from the ERA5 archive
+
+The workflow to get to the processed data that ended up in the data repository above is: 
+1. Download monthly files from the ERA5 archive (`src/download.py`)
+2. Regrid the raw data to the required resolutions (`src/regrid.py`)
+
+The raw data is from the ERA5 reanalysis archive. Information on how to download the data can be found 
+[here](https://confluence.ecmwf.int/display/CKB/How+to+download+ERA5) and 
+[here](https://cds.climate.copernicus.eu/api-how-to). 
+
+Because downloading the data can take a long time (several weeks), the workflow is encoded using [Snakemake](https
+://snakemake.readthedocs.io/). See `Snakefile` and the configuration files for each variable in `scripts/config_
+{variable}.yml`. These
+ files can be modified if additional variables are required.
+ 
+In addition to the time-dependent fields, the constant fields were downloaded and processed using `scripts
+/download_and_regrid_constants.sh`
+ 
+### Downloading the TIGGE IFS baseline
+
+To obtain the operational IFS baseline, we use the [TIGGE Archive](https://confluence.ecmwf.int/display/TIGGE
+). Downloading the data for Z500 and T850 is done in `scripts/download_tigge.py`; regridding is done in `scripts
+/convert_and_regrid_tigge.sh`.
+
+### Regridding the T21 IFS baseline
+
+The T21 baseline was created by Peter Dueben. The raw output can be found in the dataset. To regrid the data `scripts
+/convert_and_regrid_tigge.sh` was used.
+
+### Extracting single levels from 3D files
+
+If you would like to extract a single level from 3D data, e.g. 850 hPa temperature, you can use `src
+/extract_level.py`. This could be useful to reduce the amount of data that needs to be loaded into RAM. An example
+ usage would be: `python extract_level.py --input_fns DATADIR/5.625deg/temperature/*.nc --output_dir OUTDIR --level 850`
+
+## Baselines and evaluation
+ **IMPORTANT:** The format of the predictions file is a
+  NetCDF dataset with dimensions `[init_time, lead_time, lat, lon]`. Consult the notebooks for examples. You are
+   stongly encouraged to format your predictions in the same way and then use the same evaluation functions to ensure
+    consistent evaluation.
+### Baselines
+The baselines are created using Jupyter notebooks in `notebooks/`. In all notebooks, the forecasts are saved as a
+ NetCDF file in the `predictions` directory of the dataset. 
+ 
+### CNN baselines
+An example of how to load the data and train a CNN using Keras is given in `notebooks/3-cnn-example.ipynb`. In
+ addition a command line script for training CNNs is provided in `src/train_nn.py`. For the baseline CNNs in the
+  paper the config files are given in `src/nn_configs/`. To reproduce the results in the paper run e.g. `python src
+  /train_nn.py -c src/nn_configs/fccnn_3d.yml`. 
+  
+### Evaluation
+Evaluation and comparison of the different baselines in done in `notebooks/4-evaluation.ipynb`. The scoring is done
+ using the functions in `src/score.py`. The RMSE values for the baseline models are also saved in the `predictions
+ ` directory of the dataset. This is useful for plotting your own models alongside the baselines.
+
+
