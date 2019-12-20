@@ -1,4 +1,4 @@
-from score import *
+from .score import *
 import os
 import numpy as np
 import xarray as xr

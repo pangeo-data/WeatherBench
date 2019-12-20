@@ -1,16 +1,61 @@
 # WeatherBench: A benchmark dataset for data-driven weather forecasting
 
-*Stephan Rasp, Peter D. Dueben, Sebastian Scher, Jonathan A. Weyn, and Soukayna Mouatadid*
-
-If you are using this dataset please cite ???
-This paper also contains all the scientific background of the dataset. 
+If you are using this dataset please cite 
+> Stephan Rasp, Peter D. Dueben, Sebastian Scher, Jonathan A. Weyn, Soukayna Mouatadid, and Nils Thuerey, 2020.
+> WeatherBench: A benchmark dataset for data-driven weather forecasting.
+> arXiv:  
 
 This repository contains all the code for downloding and processing the data as well as code for the baseline models
- in the paper. The data itself can be downloaded here: ???
+ in the paper.
  
-If you have any questions about this dataset, please use the Github issue feature on this page! 
+If you have any questions about this dataset, please use the Github Issue feature on this page! 
+
+## Quick start
+You can follow the quickstart guide in this notebook or lauch it directly from Binder.
+
+## Download the data
+The data is hosted here with the following file structure
+
+```buildoutcfg
+
+```
+
+To start out download either the entire 5.625 degree data (175G) using 
+```shell
+wget XXX
+```
+or simply the single level geopotential data using
+```shell
+wget XXX
+```
+and then unzip the files using `unzip <file>.zip`.
+
+
+## Baselines and evaluation
+ **IMPORTANT:** The format of the predictions file is a
+  NetCDF dataset with dimensions `[init_time, lead_time, lat, lon]`. Consult the notebooks for examples. You are
+   stongly encouraged to format your predictions in the same way and then use the same evaluation functions to ensure
+    consistent evaluation.
+### Baselines
+The baselines are created using Jupyter notebooks in `notebooks/`. In all notebooks, the forecasts are saved as a
+ NetCDF file in the `predictions` directory of the dataset. 
+ 
+### CNN baselines
+An example of how to load the data and train a CNN using Keras is given in `notebooks/3-cnn-example.ipynb`. In
+ addition a command line script for training CNNs is provided in `src/train_nn.py`. For the baseline CNNs in the
+  paper the config files are given in `src/nn_configs/`. To reproduce the results in the paper run e.g. `python src
+  /train_nn.py -c src/nn_configs/fccnn_3d.yml`. 
+  
+### Evaluation
+Evaluation and comparison of the different baselines in done in `notebooks/4-evaluation.ipynb`. The scoring is done
+ using the functions in `src/score.py`. The RMSE values for the baseline models are also saved in the `predictions
+ ` directory of the dataset. This is useful for plotting your own models alongside the baselines.
+
 
 ## Data processing
+The dataset already contains the most important processed data. If you would like to download a different variable
+, regrid to a different resolution or extract single levels from the 3D files, here is how to do that!
+
 ### Downloading and processing the raw data from the ERA5 archive
 
 The workflow to get to the processed data that ended up in the data repository above is: 
@@ -46,25 +91,3 @@ The T21 baseline was created by Peter Dueben. The raw output can be found in the
 If you would like to extract a single level from 3D data, e.g. 850 hPa temperature, you can use `src
 /extract_level.py`. This could be useful to reduce the amount of data that needs to be loaded into RAM. An example
  usage would be: `python extract_level.py --input_fns DATADIR/5.625deg/temperature/*.nc --output_dir OUTDIR --level 850`
-
-## Baselines and evaluation
- **IMPORTANT:** The format of the predictions file is a
-  NetCDF dataset with dimensions `[init_time, lead_time, lat, lon]`. Consult the notebooks for examples. You are
-   stongly encouraged to format your predictions in the same way and then use the same evaluation functions to ensure
-    consistent evaluation.
-### Baselines
-The baselines are created using Jupyter notebooks in `notebooks/`. In all notebooks, the forecasts are saved as a
- NetCDF file in the `predictions` directory of the dataset. 
- 
-### CNN baselines
-An example of how to load the data and train a CNN using Keras is given in `notebooks/3-cnn-example.ipynb`. In
- addition a command line script for training CNNs is provided in `src/train_nn.py`. For the baseline CNNs in the
-  paper the config files are given in `src/nn_configs/`. To reproduce the results in the paper run e.g. `python src
-  /train_nn.py -c src/nn_configs/fccnn_3d.yml`. 
-  
-### Evaluation
-Evaluation and comparison of the different baselines in done in `notebooks/4-evaluation.ipynb`. The scoring is done
- using the functions in `src/score.py`. The RMSE values for the baseline models are also saved in the `predictions
- ` directory of the dataset. This is useful for plotting your own models alongside the baselines.
-
-

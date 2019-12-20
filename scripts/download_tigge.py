@@ -3,12 +3,10 @@ import calendar
 import os
 from fire import Fire
 
-def main(var):
-    path = '/media/rasp/Elements/weather-benchmark/tigge/raw/'
+def main(var, years=[2017, 2018], month_start=1, month_end=12, path='/media/rasp/Elements/weather-benchmark/tigge/raw/'):
     os.makedirs(path, exist_ok=True)
     server = ECMWFDataServer()
-    years = [2018]#[2017, 2018]
-    months = range(4, 13)
+    months = range(month_start, month_end+1)
     for year in years:
         for month in months:
             days = calendar.monthrange(year, month)[1]
