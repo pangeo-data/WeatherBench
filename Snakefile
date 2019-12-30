@@ -52,7 +52,7 @@ rule zip:
     output:
           "{dataset}/{res}deg/{name}/{name}_{res}deg.zip"
     shell:
-         "zip {output} {input}"
+         "cd {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/ && zip {output} *.nc"
 
 rule all:
     input:
