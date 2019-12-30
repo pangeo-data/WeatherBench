@@ -1,5 +1,7 @@
 # WeatherBench: A benchmark dataset for data-driven weather forecasting
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ai4environment/WeatherBench/master?filepath=quickstart.ipynb)
+
 If you are using this dataset please cite 
 > Stephan Rasp, Peter D. Dueben, Sebastian Scher, Jonathan A. Weyn, Soukayna Mouatadid, and Nils Thuerey, 2020.
 > WeatherBench: A benchmark dataset for data-driven weather forecasting.
@@ -11,7 +13,8 @@ This repository contains all the code for downloding and processing the data as 
 If you have any questions about this dataset, please use the Github Issue feature on this page! 
 
 ## Quick start
-You can follow the quickstart guide in this notebook or lauch it directly from Binder.
+You can follow the quickstart guide in this notebook or lauch it directly from [Binder](https://mybinder.org/v2/gh
+/ai4environment/WeatherBench/master?filepath=quickstart.ipynb).
 
 ## Download the data
 The data is hosted here with the following file structure
