@@ -1,3 +1,5 @@
+![Logo](https://github.com/ai4environment/WeatherBench/blob/master/figures/logo_text_left.png?raw=true)
+
 # WeatherBench: A benchmark dataset for data-driven weather forecasting
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ai4environment/WeatherBench/master?filepath=quickstart.ipynb)
@@ -13,8 +15,7 @@ This repository contains all the code for downloding and processing the data as 
 If you have any questions about this dataset, please use the Github Issue feature on this page! 
 
 ## Quick start
-You can follow the quickstart guide in this notebook or lauch it directly from [Binder](https://mybinder.org/v2/gh
-/ai4environment/WeatherBench/master?filepath=quickstart.ipynb).
+You can follow the quickstart guide in this notebook or lauch it directly from [Binder](https://mybinder.org/v2/gh/ai4environment/WeatherBench/master?filepath=quickstart.ipynb).
 
 ## Download the data
 The data is hosted here with the following file structure
