@@ -17,10 +17,66 @@ If you have any questions about this dataset, please use the Github Issue featur
 You can follow the quickstart guide in [this notebook](https://github.com/pangeo-data/WeatherBench/blob/master/quickstart.ipynb) or lauch it directly from [Binder](https://binder.pangeo.io/v2/gh/pangeo-data/WeatherBench/master?filepath=quickstart.ipynb).
 
 ## Download the data
-The data is hosted here with the following file structure
+The data is hosted here with the following directory structure
 
 ```
-
+.
+├── 1.40625deg
+│   ├── 10m_u_component_of_wind
+│   ├── 10m_v_component_of_wind
+│   ├── 2m_temperature
+│   ├── constants
+│   ├── geopotential
+│   ├── potential_vorticity
+│   ├── relative_humidity
+│   ├── specific_humidity
+│   ├── temperature
+│   ├── toa_incident_solar_radiation
+│   ├── total_cloud_cover
+│   ├── total_precipitation
+│   ├── u_component_of_wind
+│   ├── v_component_of_wind
+│   └── vorticity
+├── 2.8125deg
+│   ├── 10m_u_component_of_wind
+│   ├── 10m_v_component_of_wind
+│   ├── 2m_temperature
+│   ├── constants
+│   ├── geopotential
+│   ├── potential_vorticity
+│   ├── relative_humidity
+│   ├── specific_humidity
+│   ├── temperature
+│   ├── toa_incident_solar_radiation
+│   ├── total_cloud_cover
+│   ├── total_precipitation
+│   ├── u_component_of_wind
+│   ├── v_component_of_wind
+│   └── vorticity
+├── 5.625deg
+│   ├── 10m_u_component_of_wind
+│   ├── 10m_v_component_of_wind
+│   ├── 2m_temperature
+│   ├── constants
+│   ├── geopotential
+│   ├── geopotential_500
+│   ├── potential_vorticity
+│   ├── relative_humidity
+│   ├── specific_humidity
+│   ├── temperature
+│   ├── temperature_850
+│   ├── toa_incident_solar_radiation
+│   ├── total_cloud_cover
+│   ├── total_precipitation
+│   ├── u_component_of_wind
+│   ├── v_component_of_wind
+│   └── vorticity
+├── baselines
+│   └── saved_models
+└── tigge
+    ├── 1.40625deg
+    ├── 2.8125deg
+    └── 5.625deg
 ```
 
 To start out download either the entire 5.625 degree data (175G) using 
@@ -69,8 +125,7 @@ The raw data is from the ERA5 reanalysis archive. Information on how to download
 [here](https://confluence.ecmwf.int/display/CKB/How+to+download+ERA5) and 
 [here](https://cds.climate.copernicus.eu/api-how-to). 
 
-Because downloading the data can take a long time (several weeks), the workflow is encoded using [Snakemake](https
-://snakemake.readthedocs.io/). See `Snakefile` and the configuration files for each variable in `scripts/config_
+Because downloading the data can take a long time (several weeks), the workflow is encoded using [Snakemake](https://snakemake.readthedocs.io/). See `Snakefile` and the configuration files for each variable in `scripts/config_
 {variable}.yml`. These
  files can be modified if additional variables are required. To execute Snakemake for a particular variable type
  : `snakemake -p -j 4 all --configfile scripts/config_toa_incident_solar_radiation.yml`.
