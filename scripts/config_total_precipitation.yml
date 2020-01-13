@@ -1,0 +1,8 @@
+datadir: /media/rasp/Elements/weather-benchmark
+name: total_precipitation
+era_var_name: total_precipitation
+level_type: single
+res:
+  - 1.40625
+  - 2.8125
+  - 5.625

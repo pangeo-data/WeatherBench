@@ -1,0 +1,8 @@
+datadir: /media/rasp/Elements/weather-benchmark
+name: total_cloud_cover
+era_var_name: total_cloud_cover
+level_type: single
+res:
+  - 1.40625
+  - 2.8125
+  - 5.625

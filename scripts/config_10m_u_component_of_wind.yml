@@ -1,0 +1,8 @@
+datadir: /media/rasp/Elements/weather-benchmark
+name: 10m_u_component_of_wind
+era_var_name: 10m_u_component_of_wind
+level_type: single
+res:
+  - 1.40625
+  - 2.8125
+  - 5.625
