@@ -5,6 +5,6 @@ done
 
 # Regrid to 5.625 degrees
 python ../src/regrid.py \
---input_fns /media/rasp/Elements/weather-benchmark/IFS_T21/raw/*.nc \
---output_dir /media/rasp/Elements/weather-benchmark/IFS_T21/5.625deg \
+--input_fns /media/rasp/Elements/weather-benchmark/IFS_T42/raw/output_42_pl_2.8125*.nc \
+--output_dir /media/rasp/Elements/weather-benchmark/IFS_T42/ \
 --ddeg_out 5.625
