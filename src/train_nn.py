@@ -9,6 +9,7 @@ import tensorflow.keras.backend as K
 from configargparse import ArgParser
 
 def limit_mem():
+    """Limit TF GPU mem usage"""
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     tf.Session(config=config)
