@@ -6,88 +6,92 @@
 If you are using this dataset please cite 
 > Stephan Rasp, Peter D. Dueben, Sebastian Scher, Jonathan A. Weyn, Soukayna Mouatadid, and Nils Thuerey, 2020.
 > WeatherBench: A benchmark dataset for data-driven weather forecasting.
-> arXiv:  
+> arXiv: [https://arxiv.org/abs/2002.00469](https://arxiv.org/abs/2002.00469)
 
 This repository contains all the code for downloding and processing the data as well as code for the baseline models
  in the paper.
  
-If you have any questions about this dataset, please use the Github Issue feature on this page! 
+If you have any questions about this dataset, please use the [Github Issue](https://github.com/pangeo-data/WeatherBench/issues) feature on this page! 
 
 ## Quick start
 You can follow the quickstart guide in [this notebook](https://github.com/pangeo-data/WeatherBench/blob/master/quickstart.ipynb) or lauch it directly from [Binder](https://binder.pangeo.io/v2/gh/pangeo-data/WeatherBench/master?filepath=quickstart.ipynb).
 
 ## Download the data
-The data is hosted here with the following directory structure
+The data is hosted [here](https://mediatum.ub.tum.de/1524895) with the following directory structure
 
 ```
 .
-├── 1.40625deg
-│   ├── 10m_u_component_of_wind
-│   ├── 10m_v_component_of_wind
-│   ├── 2m_temperature
-│   ├── constants
-│   ├── geopotential
-│   ├── potential_vorticity
-│   ├── relative_humidity
-│   ├── specific_humidity
-│   ├── temperature
-│   ├── toa_incident_solar_radiation
-│   ├── total_cloud_cover
-│   ├── total_precipitation
-│   ├── u_component_of_wind
-│   ├── v_component_of_wind
-│   └── vorticity
-├── 2.8125deg
-│   ├── 10m_u_component_of_wind
-│   ├── 10m_v_component_of_wind
-│   ├── 2m_temperature
-│   ├── constants
-│   ├── geopotential
-│   ├── potential_vorticity
-│   ├── relative_humidity
-│   ├── specific_humidity
-│   ├── temperature
-│   ├── toa_incident_solar_radiation
-│   ├── total_cloud_cover
-│   ├── total_precipitation
-│   ├── u_component_of_wind
-│   ├── v_component_of_wind
-│   └── vorticity
-├── 5.625deg
-│   ├── 10m_u_component_of_wind
-│   ├── 10m_v_component_of_wind
-│   ├── 2m_temperature
-│   ├── constants
-│   ├── geopotential
-│   ├── geopotential_500
-│   ├── potential_vorticity
-│   ├── relative_humidity
-│   ├── specific_humidity
-│   ├── temperature
-│   ├── temperature_850
-│   ├── toa_incident_solar_radiation
-│   ├── total_cloud_cover
-│   ├── total_precipitation
-│   ├── u_component_of_wind
-│   ├── v_component_of_wind
-│   └── vorticity
-├── baselines
-│   └── saved_models
-└── tigge
-    ├── 1.40625deg
-    ├── 2.8125deg
-    └── 5.625deg
+|-- 1.40625deg
+|   |-- 10m_u_component_of_wind
+|   |-- 10m_v_component_of_wind
+|   |-- 2m_temperature
+|   |-- constants
+|   |-- geopotential
+|   |-- potential_vorticity
+|   |-- relative_humidity
+|   |-- specific_humidity
+|   |-- temperature
+|   |-- toa_incident_solar_radiation
+|   |-- total_cloud_cover
+|   |-- total_precipitation
+|   |-- u_component_of_wind
+|   |-- v_component_of_wind
+|   `-- vorticity
+|-- 2.8125deg
+|   |-- 10m_u_component_of_wind
+|   |-- 10m_v_component_of_wind
+|   |-- 2m_temperature
+|   |-- constants
+|   |-- geopotential
+|   |-- potential_vorticity
+|   |-- relative_humidity
+|   |-- specific_humidity
+|   |-- temperature
+|   |-- toa_incident_solar_radiation
+|   |-- total_cloud_cover
+|   |-- total_precipitation
+|   |-- u_component_of_wind
+|   |-- v_component_of_wind
+|   `-- vorticity
+|-- 5.625deg
+|   |-- 10m_u_component_of_wind
+|   |-- 10m_v_component_of_wind
+|   |-- 2m_temperature
+|   |-- constants
+|   |-- geopotential
+|   |-- geopotential_500
+|   |-- potential_vorticity
+|   |-- relative_humidity
+|   |-- specific_humidity
+|   |-- temperature
+|   |-- temperature_850
+|   |-- toa_incident_solar_radiation
+|   |-- total_cloud_cover
+|   |-- total_precipitation
+|   |-- u_component_of_wind
+|   |-- v_component_of_wind
+|   `-- vorticity
+|-- baselines
+|   `-- saved_models
+|-- IFS_T42
+|   `-- raw
+|-- IFS_T63
+|   `-- raw
+`-- tigge
+    |-- 1.40625deg
+    |-- 2.8125deg
+    `-- 5.625deg
 ```
 
 To start out download either the entire 5.625 degree data (175G) using 
 ```shell
-wget XXX
+wget "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F5.625deg%2Fgeopotential&files=geopotential_5.625deg.zip" -O geopotential_5.625deg.zip
 ```
-or simply the single level geopotential data using
+or simply the single level (500 hPa) geopotential data using
 ```shell
-wget XXX
+wget "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F5.625deg%2Fgeopotential_500&files=geopotential_500_5.625deg.zip" -O geopotential_500_5.625deg.zip
 ```
-and then unzip the files using `unzip <file>.zip`.
+and then unzip the files using `unzip <file>.zip`. You can also use `ftp` or `rsync` to download the data. For instructions, follow the [download link](https://mediatum.ub.tum.de/1524895).
 
 
 ## Baselines and evaluation
@@ -102,8 +106,7 @@ The baselines are created using Jupyter notebooks in `notebooks/`. In all notebo
 ### CNN baselines
 An example of how to load the data and train a CNN using Keras is given in `notebooks/3-cnn-example.ipynb`. In
  addition a command line script for training CNNs is provided in `src/train_nn.py`. For the baseline CNNs in the
-  paper the config files are given in `src/nn_configs/`. To reproduce the results in the paper run e.g. `python src
-  /train_nn.py -c src/nn_configs/fccnn_3d.yml`. 
+  paper the config files are given in `src/nn_configs/`. To reproduce the results in the paper run e.g. `python -m src.train_nn -c src/nn_configs/fccnn_3d.yml`. 
   
 ### Evaluation
 Evaluation and comparison of the different baselines in done in `notebooks/4-evaluation.ipynb`. The scoring is done
