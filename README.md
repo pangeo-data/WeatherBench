@@ -85,7 +85,7 @@ The data is hosted [here](https://mediatum.ub.tum.de/1524895) with the following
 
 To start out download either the entire 5.625 degree data (175G) using 
 ```shell
-wget "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F5.625deg%2Fgeopotential&files=geopotential_5.625deg.zip" -O geopotential_5.625deg.zip
+wget "https://dataserv.ub.tum.de/s/m1524895/download?path=%2F5.625deg&files=all_5.625deg.zip" -O all_5.625deg.zip
 ```
 or simply the single level (500 hPa) geopotential data using
 ```shell
