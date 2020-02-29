@@ -3,16 +3,18 @@ name: specific_humidity
 era_var_name: specific_humidity
 level_type: pressure
 pressure_level:
-  - 1
-  - 10
+  - 50
   - 100
+  - 150
   - 200
+  - 250
   - 300
   - 400
   - 500
   - 600
   - 700
   - 850
+  - 925
   - 1000
 res:
   - 1.40625
