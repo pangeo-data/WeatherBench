@@ -1,4 +1,4 @@
-datadir: /media/rasp/Elements/weather-benchmark
+datadir: /mnt/netdisk1/stephan/WeatherBench/
 name: specific_humidity
 era_var_name: specific_humidity
 level_type: pressure
