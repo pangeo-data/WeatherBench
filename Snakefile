@@ -24,6 +24,7 @@ rule regrid:
           "{dataset}/raw/{name}/{name}_{year}_raw.nc"
     output:
           "{dataset}/{res}deg/{name}/{name}_{year}_{res}deg.nc.tmp"
+    threads: 2
     shell:
           "python src/regrid.py \
             --input_fns {input} \
@@ -52,7 +53,8 @@ rule zip:
     output:
           "{dataset}/{res}deg/{name}/{name}_{res}deg.zip"
     shell:
-         "cd {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/ && zip {output} *.nc"
+         "cd {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/ && zip {output} *.nc && "
+         "rm {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/.nc"
 
 rule all:
     input:
