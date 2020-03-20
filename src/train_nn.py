@@ -76,6 +76,7 @@ class DataGenerator(keras.utils.Sequence):
         if self.shuffle == True:
             np.random.shuffle(self.idxs)
 
+# Old implementation for tensorflow=1.x
 # class PeriodicConv2D(tf.keras.layers.Conv2D):
 #     """Convolution with periodic padding in second spatial dimension (lon)"""
 #     def __init__(self, filters, kernel_size, **kwargs):
@@ -124,6 +125,10 @@ class PeriodicConv2D(tf.keras.layers.Layer):
                  kernel_size,
                  conv_kwargs={},
                  **kwargs):
+        """
+        Note that this will not work for tensorflow<1.13 and will throw an error for >=1.14<2.x. 
+        The error does not seem to matter though. The results still look fine.    
+        """
         super().__init__(**kwargs)
         self.filters = filters
         self.kernel_size = kernel_size
@@ -251,7 +256,7 @@ def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patien
 
     # Train model
     # TODO: Learning rate schedule
-    model.fit_generator(dg_train, epochs=1, validation_data=dg_valid,
+    model.fit_generator(dg_train, epochs=100, validation_data=dg_valid,
                       callbacks=[tf.keras.callbacks.EarlyStopping(
                           monitor='val_loss',
                           min_delta=0,
