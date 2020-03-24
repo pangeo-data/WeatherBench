@@ -1,4 +1,4 @@
-datadir: /media/rasp/Elements/weather-benchmark
+datadir: /mnt/netdisk1/stephan/WeatherBench/
 name: geopotential
 era_var_name: geopotential
 level_type: pressure

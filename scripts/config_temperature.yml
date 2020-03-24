@@ -1,4 +1,4 @@
-datadir: /media/rasp/Elements/weather-benchmark
+datadir: /mnt/netdisk1/stephan/WeatherBench/
 name: temperature
 era_var_name: temperature
 level_type: pressure
