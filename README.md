@@ -18,7 +18,7 @@ If you have any questions about this dataset, please use the [Github Issue](http
 |--------------------|----------------------------------|----------------------------|----------------------|------------------|
 | Operational IFS | 154 / 334 | 1.36 / 2.03 | ECWMF physical model | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
 | IFS T63 | 268 / 463 | 1.85 / 2.52 | Lower resolution physical model (approx. 2.8 deg) | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
-| Weyn et al. 2020 | **388 / 624** | Not included | UNet with cube-sphere mapping | [Weyn et al. 2020](https://doi.org/10.1002/essoar.10502543.1) |
+| Weyn et al. 2020 (iterative) | **388 / 624** | Not included | UNet with cube-sphere mapping | [Weyn et al. 2020](https://doi.org/10.1002/essoar.10502543.1) |
 | IFS T42 | 489 / 743 | 3.09 / 3.83 |Lower resolution physical model (approx. 1.9 deg)  | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
 | Weekly climatology | 816 | 3.50 | Climatology for each calendar week | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
 | Persistence | 936 / 1033 | 4.23 / 4.56 |  | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
