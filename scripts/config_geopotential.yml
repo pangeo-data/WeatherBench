@@ -1,4 +1,4 @@
-datadir: /mnt/netdisk1/stephan/WeatherBench/
+datadir: /mnt/netdisk1/stephan/WeatherBench
 name: geopotential
 era_var_name: geopotential
 level_type: pressure

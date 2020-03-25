@@ -1,4 +1,4 @@
-datadir: /mnt/netdisk1/stephan/WeatherBench/
+datadir: /mnt/netdisk1/stephan/WeatherBench
 name: temperature
 era_var_name: temperature
 level_type: pressure
@@ -15,7 +15,7 @@ pressure_level:
   - 700
   - 850
   - 925
-  - 1000
+  -
 res:
   - 1.40625
   - 2.8125

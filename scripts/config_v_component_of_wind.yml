@@ -1,4 +1,4 @@
-datadir: /mnt/netdisk1/stephan/WeatherBench/
+datadir: /mnt/netdisk1/stephan/WeatherBench
 name: v_component_of_wind
 era_var_name: v_component_of_wind
 level_type: pressure
