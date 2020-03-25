@@ -5,6 +5,9 @@ all_years = [
     '2009','2010','2011','2012','2013','2014','2015','2016','2017','2018'
 ]
 
+if config['tmpdir'] is None:
+    config['tmpdir'] = config['datadir']
+
 print(config)
 
 rule download:
@@ -34,8 +37,8 @@ rule regrid:
 
 rule delete:
     input:
-          expand("{{dataset}}/{res}deg/{{name}}/{{name}}_{{year}}_{res}deg.nc.tmp",
-                 res=config['res']),
+          expand("{tmpdir}/{res}deg/{{name}}/{{name}}_{{year}}_{res}deg.nc.tmp",
+                 res=config['res'], tmpdir=config['tmpdir']),
     output:
           expand("{{dataset}}/{res}deg/{{name}}/{{name}}_{{year}}_{res}deg.nc",
                  res=config['res'])
@@ -43,7 +46,7 @@ rule delete:
     run:
           for i, o in zip(input, output):
               shell("mv {i} {o}")
-          shell("rm {wildcards.dataset}/raw/{wildcards.name}/{wildcards.name}_{wildcards.year}_raw.nc"),
+          shell("rm {config[tmpdir]}/raw/{wildcards.name}/{wildcards.name}_{wildcards.year}_raw.nc"),
 
 
 rule zip:
@@ -56,8 +59,13 @@ rule zip:
          "cd {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/ && zip {output} *.nc && "
          "rm {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/.nc"
 
-rule all:
+rule all_zip:
     input:
          expand("{datadir}/{res}deg/{name}/{name}_{res}deg.zip",
                 datadir=config['datadir'], res=config['res'], name=config['name']),
+
+rule all_nozip:
+    input:
+         expand("{datadir}/{res}deg/{name}/{name}_{year}_{res}deg.nc",
+                datadir=config['datadir'], res=config['res'], name=config['name'], year=all_years),
 
