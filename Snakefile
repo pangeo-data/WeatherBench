@@ -27,7 +27,6 @@ rule regrid:
           "{dataset}/raw/{name}/{name}_{year}_raw.nc"
     output:
           "{dataset}/{res}deg/{name}/{name}_{year}_{res}deg.nc.tmp"
-    threads: 2
     shell:
           "python src/regrid.py \
             --input_fns {input} \
