@@ -14,7 +14,7 @@ This repository contains all the code for downloding and processing the data as 
 If you have any questions about this dataset, please use the [Github Issue](https://github.com/pangeo-data/WeatherBench/issues) feature on this page! 
 
 ## Leaderboard
-| Model | Z500 RMSE (3 / 5 days) [m^2/s^2] | T850 RMSE (3 / 5 days) [K] | Notes | Reference |
+| Model | Z500 RMSE (3 / 5 days) [m<sup>2</sup>/s<sup>2</sup>] | T850 RMSE (3 / 5 days) [K] | Notes | Reference |
 |--------------------|----------------------------------|----------------------------|----------------------|------------------|
 | Operational IFS | 154 / 334 | 1.36 / 2.03 | ECWMF physical model | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
 | IFS T63 | 268 / 463 | 1.85 / 2.52 | Lower resolution physical model (approx. 1.9 deg) | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
