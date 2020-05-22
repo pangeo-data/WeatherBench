@@ -6,6 +6,7 @@ import xarray as xr
 
 def load_test_data(path, var, years=slice('2017', '2018')):
     """
+    Load the test dataset. If z return z500, if t return t850.
     Args:
         path: Path to nc files
         var: variable. Geopotential = 'z', Temperature = 't'
@@ -14,12 +15,12 @@ def load_test_data(path, var, years=slice('2017', '2018')):
     Returns:
         dataset: Concatenated dataset for 2017 and 2018
     """
-    assert var in ['z', 't'], 'Test data only for Z500 and T850'
     ds = xr.open_mfdataset(f'{path}/*.nc', combine='by_coords')[var]
-    try:
-        ds = ds.sel(level=500 if var == 'z' else 850).drop('level')
-    except ValueError:
-        pass
+    if var in ['z', 't']:
+        try:
+            ds = ds.sel(level=500 if var == 'z' else 850).drop('level')
+        except ValueError:
+            ds = ds.drop('level')
     return ds.sel(time=years)
 
 def compute_weighted_rmse(da_fc, da_true, mean_dims=xr.ALL_DIMS):

@@ -1,4 +1,4 @@
-datadir: /mnt/netdisk1/stephan/WeatherBench
+datadir: /media/rasp/Elements/weather-benchmark
 name: potential_vorticity
 era_var_name: potential_vorticity
 level_type: pressure

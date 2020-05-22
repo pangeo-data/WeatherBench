@@ -5,7 +5,7 @@ all_years = [
     '2009','2010','2011','2012','2013','2014','2015','2016','2017','2018'
 ]
 
-if config['tmpdir'] is None:
+if config['tmpdir'] == 'None':
     config['tmpdir'] = config['datadir']
 
 print(config)
@@ -27,6 +27,8 @@ rule regrid:
           "{dataset}/raw/{name}/{name}_{year}_raw.nc"
     output:
           "{dataset}/{res}deg/{name}/{name}_{year}_{res}deg.nc.tmp"
+    priority: 100
+    threads: 3
     shell:
           "python src/regrid.py \
             --input_fns {input} \
