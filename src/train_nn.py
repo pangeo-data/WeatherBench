@@ -201,7 +201,7 @@ def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patien
     # TODO: Flexible input data
     z = xr.open_mfdataset(f'{datadir}geopotential_500/*.nc', combine='by_coords')
     t = xr.open_mfdataset(f'{datadir}temperature_850/*.nc', combine='by_coords')
-    ds = xr.merge([z, t])
+    ds = xr.merge([z, t], compat='override')  # Override level. discarded later anyway.
 
     # TODO: Flexible valid split
     ds_train = ds.sel(time=slice(*train_years))
