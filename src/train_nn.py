@@ -10,9 +10,9 @@ from configargparse import ArgParser
 
 def limit_mem():
     """Limit TF GPU mem usage"""
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True
-    tf.Session(config=config)
+    tf.compat.v1.Session(config=config)
 
 
 class DataGenerator(keras.utils.Sequence):
@@ -249,7 +249,7 @@ def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patien
 
     # Train model
     # TODO: Learning rate schedule
-    model.fit_generator(dg_train, epochs=100, validation_data=dg_valid,
+    model.fit(dg_train, epochs=100, validation_data=dg_valid,
                       callbacks=[tf.keras.callbacks.EarlyStopping(
                           monitor='val_loss',
                           min_delta=0,
