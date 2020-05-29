@@ -129,7 +129,7 @@ def build_cnn(filters, kernels, input_shape, dr=0):
     x = input = Input(shape=input_shape)
     for f, k in zip(filters[:-1], kernels[:-1]):
         x = PeriodicConv2D(f, k)(x)
-        x = LeakyReLU()(x)
+        x = keras.activations.elu(x)
         if dr > 0: x = Dropout(dr)(x)
     output = PeriodicConv2D(filters[-1], kernels[-1])(x)
     return keras.models.Model(input, output)
