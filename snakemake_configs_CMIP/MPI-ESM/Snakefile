@@ -57,4 +57,19 @@ rule all:
          expand("{datadir}/{res}deg/{name}/{name}_{year_str}_{res}deg.nc",
                 datadir=config['datadir'], res=config['res'], name=config['name'], year_str=year_strings)
 
+rule zip:
+    input:
+         expand("{{dataset}}/{{res}}deg/{{name}}/{{name}}_{year_str}_{{res}}deg.nc",
+                year_str=year_strings)
+    output:
+          "{dataset}/{res}deg/{name}/{name}_{res}deg.zip"
+    shell:
+         "cd {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/ && zip {output} *.nc && "
+         "rm {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/*.nc"
+
+rule all_zip:
+    input:
+         expand("{datadir}/{res}deg/{name}/{name}_{res}deg.zip",
+                datadir=config['datadir'], res=config['res'], name=config['name']),
+
 

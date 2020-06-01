@@ -40,7 +40,7 @@ def compute_weighted_rmse(da_fc, da_true, mean_dims=xr.ALL_DIMS):
     rmse = np.sqrt(((error)**2 * weights_lat).mean(mean_dims))
     return rmse
 
-def compute_weighted_acc(da_fc, da_true):
+def compute_weighted_acc(da_fc, da_true, mean_dims=xr.ALL_DIMS):
     """
     Compute the ACC with latitude weighting from two xr.DataArrays.
 
@@ -52,8 +52,12 @@ def compute_weighted_acc(da_fc, da_true):
         acc: Latitude weighted acc
     """
     clim = da_true.mean('time')
-    t = np.intersect1d(da_fc.time, da_true.time)
-    fa = da_fc.sel(time=t) - clim
+    try:
+        t = np.intersect1d(da_fc.time, da_true.time)
+        fa = da_fc.sel(time=t) - clim
+    except AttributeError:
+        t = da_true.time.values
+        fa = da_fc - clim
     a = da_true.sel(time=t) - clim
 
     weights_lat = np.cos(np.deg2rad(da_fc.lat))
@@ -102,7 +106,7 @@ def evaluate_iterative_forecast(da_fc, da_true, func, mean_dims=xr.ALL_DIMS):
     for f in da_fc.lead_time:
         fc = da_fc.sel(lead_time=f)
         fc['time'] = fc.time + np.timedelta64(int(f), 'h')
-        rmses.append(func(fc, da_valid, mean_dims))
+        rmses.append(func(fc, da_true, mean_dims))
     return xr.concat(rmses, 'lead_time')
 
 

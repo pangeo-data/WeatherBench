@@ -8,7 +8,7 @@ from fire import Fire
 var_dict = {
     'total_precipitation': '228228',
     'total_cloud_cover': '228164',
-    '2m_temperature': '168'
+    '2m_temperature': '167'
 }
 
 def main(var, years=[2017, 2018], month_start=1, month_end=12, path='/mnt/netdisk1/stephan/WeatherBench/tigge/raw/', ens=False):
