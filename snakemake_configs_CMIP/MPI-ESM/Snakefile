@@ -1,0 +1,75 @@
+
+# year_strings = [
+#     '185001010600-187001010000',
+#     '187001010600-189001010000',
+#     '189001010600-191001010000',
+#     '191001010600-193001010000',
+#     '193001010600-195001010000',
+#     '195001010600-197001010000',
+#     '197001010600-199001010000',
+#     '199001010600-201001010000',
+#     '201001010600-201501010000'
+# ]
+year_strings = [f'{y}01010600-{y+5}01010000' for y in range(1850, 2015, 5)]
+
+print(config)
+
+rule download:
+    output:
+          "{dataset}/raw/{name}/{name}_{year_str}_raw.nc",
+    shell:
+         "wget http://esgf3.dkrz.de/thredds/fileServer/cmip6/CMIP/MPI-M/MPI-ESM1-2-HR/historical/{config["
+         "run]}/6hrPlevPt/"
+         "{config[cmip_name]}/gn/v20190710/"
+         "{config[cmip_name]}_6hrPlevPt_MPI-ESM1-2-HR_historical_{config[run]}_gn_{wildcards.year_str}.nc "
+         "-O {wildcards.dataset}/raw/{config[name]}/{config[name]}_{wildcards.year_str}_raw.nc"
+
+rule regrid:
+    input:
+          "{dataset}/raw/{name}/{name}_{year_str}_raw.nc"
+    output:
+          "{dataset}/{res}deg/{name}/{name}_{year_str}_{res}deg.nc.tmp"
+    shell:
+          "python src/regrid.py \
+            --input_fns {input} \
+            --output_dir {wildcards.dataset}/{wildcards.res}deg/{wildcards.name} \
+            --ddeg_out {wildcards.res} \
+            --cmip 1 \
+            --rename {config[cmip_name]} {config[era_name]} \
+            --file_ending nc.tmp"
+
+rule delete:
+    input:
+          expand("{{dataset}}/{res}deg/{{name}}/{{name}}_{{year_str}}_{res}deg.nc.tmp",
+                 res=config['res']),
+    output:
+          expand("{{dataset}}/{res}deg/{{name}}/{{name}}_{{year_str}}_{res}deg.nc",
+                 res=config['res'])
+    priority: 100
+    run:
+          for i, o in zip(input, output):
+              shell("mv {i} {o}")
+          shell("rm {wildcards.dataset}/raw/{wildcards.name}/{wildcards.name}_{wildcards.year_str}_raw.nc"),
+
+
+rule all:
+    input:
+         expand("{datadir}/{res}deg/{name}/{name}_{year_str}_{res}deg.nc",
+                datadir=config['datadir'], res=config['res'], name=config['name'], year_str=year_strings)
+
+rule zip:
+    input:
+         expand("{{dataset}}/{{res}}deg/{{name}}/{{name}}_{year_str}_{{res}}deg.nc",
+                year_str=year_strings)
+    output:
+          "{dataset}/{res}deg/{name}/{name}_{res}deg.zip"
+    shell:
+         "cd {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/ && zip {output} *.nc && "
+         "rm {wildcards.dataset}/{wildcards.res}deg/{wildcards.name}/*.nc"
+
+rule all_zip:
+    input:
+         expand("{datadir}/{res}deg/{name}/{name}_{res}deg.zip",
+                datadir=config['datadir'], res=config['res'], name=config['name']),
+
+

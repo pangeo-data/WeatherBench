@@ -4,6 +4,7 @@ import numpy as np
 import xesmf as xe
 from glob import glob
 import os
+from tqdm import tqdm
 
 def regrid(
         ds_in,
@@ -33,14 +34,14 @@ def regrid(
 
     # Create regridder
     regridder = xe.Regridder(
-        ds_in, grid_out, method, periodic=True, reuse_weights=reuse_weights
+        ds_in, grid_out, method, periodic=True, reuse_weights=reuse_weights,
     )
 
     # Hack to speed up regridding of large files
     ds_list = []
     chunk_size = 500
     n_chunks = len(ds_in.time) // chunk_size + 1
-    for i in range(n_chunks+1):
+    for i in range(n_chunks):
         ds_small = ds_in.isel(time=slice(i*chunk_size, (i+1)*chunk_size))
         ds_list.append(regridder(ds_small).astype('float32'))
     ds_out = xr.concat(ds_list, dim='time')
@@ -62,7 +63,8 @@ def main(
         method='bilinear',
         reuse_weights=True,
         custom_fn=None,
-        file_ending='nc'
+        file_ending='nc',
+        is_grib=False
 ):
     """
     :param input_fns: Input files. Can use *. If more than one, loop over them
@@ -79,9 +81,12 @@ def main(
     if '*' in input_fns[0]:
         input_fns = sorted(glob(input_fns[0]))
     # Loop over input files
-    for fn in input_fns:
+    for fn in tqdm(input_fns):
         print(f'Regridding file: {fn}')
-        ds_in = xr.open_dataset(fn)
+        if is_grib:
+            ds_in = xr.open_dataset(fn, engine='cfgrib')
+        else:
+            ds_in = xr.open_dataset(fn)
         ds_out = regrid(ds_in, ddeg_out, method, reuse_weights)
         fn_out = (
             custom_fn or
@@ -131,6 +136,12 @@ if __name__ == '__main__':
         help="File ending. Default = nc",
         default='nc'
     )
+    parser.add_argument(
+        '--is_grib',
+        type=int,
+        help="Input is .grib file. 0 (default) or 1",
+        default=0
+    )
     args = parser.parse_args()
 
     main(
@@ -139,7 +150,8 @@ if __name__ == '__main__':
         ddeg_out=args.ddeg_out,
         reuse_weights=args.reuse_weights,
         custom_fn=args.custom_fn,
-        file_ending=args.file_ending
+        file_ending=args.file_ending,
+        is_grib=args.is_grib
     )
 
 

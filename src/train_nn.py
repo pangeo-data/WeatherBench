@@ -4,7 +4,7 @@ import numpy as np
 import xarray as xr
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow.keras.layers import Input, Dropout, Conv2D, Lambda
+from tensorflow.keras.layers import Input, Dropout, Conv2D, Lambda, LeakyReLU
 import tensorflow.keras.backend as K
 from configargparse import ArgParser
 
@@ -76,29 +76,6 @@ class DataGenerator(keras.utils.Sequence):
         if self.shuffle == True:
             np.random.shuffle(self.idxs)
 
-# Old implementation for tensorflow=1.x
-# class PeriodicConv2D(tf.keras.layers.Conv2D):
-#     """Convolution with periodic padding in second spatial dimension (lon)"""
-#     def __init__(self, filters, kernel_size, **kwargs):
-#         assert type(kernel_size) is int, 'Periodic convolutions only works for square kernels.'
-#         self.pad_width = (kernel_size - 1) // 2
-#         super().__init__(filters, kernel_size, **kwargs)
-#         assert self.padding == 'valid', 'Periodic convolution only works for valid padding.'
-#         assert sum(self.strides) == 2, 'Periodic padding only works for stride (1, 1)'
-#
-#     def _pad(self, inputs):
-#         # Input: [samples, lat, lon, filters]
-#         # Periodic padding in lon direction
-#         inputs_padded = tf.concat(
-#             [inputs[:, :, -self.pad_width:, :], inputs, inputs[:, :, :self.pad_width, :]], axis=2)
-#         # Zero padding in the lat direction
-#         inputs_padded = tf.pad(inputs_padded, [[0, 0], [self.pad_width, self.pad_width], [0, 0], [0, 0]])
-#         return inputs_padded
-#
-#     def __call__(self, inputs, *args, **kwargs):
-#         # Unfortunate workaround necessary for TF < 1.13
-#         inputs_padded = Lambda(self._pad)(inputs)
-#         return super().__call__(inputs_padded, *args, **kwargs)
 
 class PeriodicPadding2D(tf.keras.layers.Layer):
     def __init__(self, pad_width, **kwargs):
@@ -124,11 +101,7 @@ class PeriodicConv2D(tf.keras.layers.Layer):
     def __init__(self, filters,
                  kernel_size,
                  conv_kwargs={},
-                 **kwargs):
-        """
-        Note that this will not work for tensorflow<1.13 and will throw an error for >=1.14<2.x. 
-        The error does not seem to matter though. The results still look fine.    
-        """
+                 **kwargs, ):
         super().__init__(**kwargs)
         self.filters = filters
         self.kernel_size = kernel_size
@@ -150,11 +123,13 @@ class PeriodicConv2D(tf.keras.layers.Layer):
         config.update({'filters': self.filters, 'kernel_size': self.kernel_size, 'conv_kwargs': self.conv_kwargs})
         return config
 
-def build_cnn(filters, kernels, input_shape, activation='elu', dr=0):
+
+def build_cnn(filters, kernels, input_shape, dr=0):
     """Fully convolutional network"""
     x = input = Input(shape=input_shape)
     for f, k in zip(filters[:-1], kernels[:-1]):
-        x = PeriodicConv2D(f, k, conv_kwargs={'activation': activation})(x)
+        x = PeriodicConv2D(f, k)(x)
+        x = keras.activations.elu(x)
         if dr > 0: x = Dropout(dr)(x)
     output = PeriodicConv2D(filters[-1], kernels[-1])(x)
     return keras.models.Model(input, output)
@@ -222,6 +197,24 @@ def create_iterative_predictions(model, dg, max_lead_time=5 * 24):
             lev_idx += nlevs
     return xr.merge(das)
 
+def create_cnn(filters, kernels, dropout=0., activation='elu', periodic=True):
+    assert len(filters) == len(kernels), 'Requires same number of filters and kernel_sizes.'
+    input = Input(shape=(None, None, 1,))
+    x = input
+    for f, k in zip(filters[:-1], kernels[:-1]):
+        if periodic:
+            x = PeriodicConv2D(f, k, padding='valid', activation=activation)(x)
+        else:
+            x = Conv2D(f, k, padding='same', activation=activation)(x)
+        if dropout > 0:
+            x = Dropout(dropout)(x)
+    if periodic:
+        output = PeriodicConv2D(filters[-1], kernels[-1], padding='valid')(x)
+    else:
+        output = Conv2D(filters[-1], kernels[-1], padding='same')(x)
+    model = keras.models.Model(inputs=input, outputs=output)
+    return model
+
 
 def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patience, model_save_fn, pred_save_fn,
          train_years, valid_years, test_years, lead_time, gpu, iterative):
@@ -250,13 +243,13 @@ def main(datadir, vars, filters, kernels, lr, activation, dr, batch_size, patien
 
     # Build model
     # TODO: Flexible input shapes and optimizer
-    model = build_cnn(filters, kernels, input_shape=(32, 64, len(vars)), activation=activation, dr=dr)
+    model = build_cnn(filters, kernels, input_shape=(32, 64, len(vars)), dr=dr)
     model.compile(keras.optimizers.Adam(lr), 'mse')
     print(model.summary())
 
     # Train model
     # TODO: Learning rate schedule
-    model.fit_generator(dg_train, epochs=100, validation_data=dg_valid,
+    model.fit(dg_train, epochs=100, validation_data=dg_valid,
                       callbacks=[tf.keras.callbacks.EarlyStopping(
                           monitor='val_loss',
                           min_delta=0,

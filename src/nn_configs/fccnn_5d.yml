@@ -1,7 +1,7 @@
 # NN config file
-datadir: /mnt/netdisk1/stephan/5.625deg/
-model_save_fn: /home/stephan/data/weather-benchmark/predictions/saved_models/fccnn_5d.h5
-pred_save_fn: /home/stephan/data/weather-benchmark/predictions/fccnn_5d.nc
+datadir: /data/stephan/WeatherBench/5.625deg/
+model_save_fn: /data/stephan/WeatherBench/baselines/saved_models/cnn_3d.h5
+pred_save_fn: /data/stephan/WeatherBench/baselines/cnn_3d.nc
 vars: [z, t]
 filters: [64, 64, 64, 64, 2]
 kernels: [5, 5, 5, 5, 5]

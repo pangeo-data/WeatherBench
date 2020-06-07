@@ -12,14 +12,14 @@ dependencies:
   - matplotlib
   - seaborn
   - configargparse
-  - tensorflow>=0.14
+  - tensorflow>=2.0
   - pip:
       - cdsapi
 
 # Here are the exact versions I used
 #dependencies:
 #  - python=3.7
-#  - xarray=0.13.0
+#  - xarray=0.15.1
 #  - netcdf4=1.5.2
 #  - dask=2.3.0
 #  - xesmf=0.2.0
@@ -28,6 +28,6 @@ dependencies:
 #  - matplotlib=3.1.2
 #  - seaborn=0.9.0
 #  - configargparse=0.15.1
-#  - tensorflow=0.14.0
+#  - tensorflow=2.1.0
 #  - pip:
 #      - cdsapi=0.2.3

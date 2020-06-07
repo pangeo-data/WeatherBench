@@ -1,0 +1,8 @@
+datadir: /data/stephan/WeatherBench/CMIP/MPI-ESM
+name: specific_humidity
+cmip_name: hus
+era_name: q
+run: r1i1p1f1
+res:
+  - 2.8125
+  - 5.625
