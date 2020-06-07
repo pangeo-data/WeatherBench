@@ -12,6 +12,6 @@ dependencies:
   - matplotlib=3.1.2
   - seaborn=0.9.0
   - configargparse=0.15.1
-  - tensorflow=0.14
+  - tensorflow=2.1
   - pip:
       - cdsapi=0.2.3

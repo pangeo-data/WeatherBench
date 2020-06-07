@@ -43,6 +43,7 @@ def compute_weighted_rmse(da_fc, da_true, mean_dims=xr.ALL_DIMS):
 def compute_weighted_acc(da_fc, da_true, mean_dims=xr.ALL_DIMS):
     """
     Compute the ACC with latitude weighting from two xr.DataArrays.
+    WARNING: Does not work if datasets contain NaNs
 
     Args:
         da_fc (xr.DataArray): Forecast. Time coordinate must be validation time.
@@ -51,6 +52,7 @@ def compute_weighted_acc(da_fc, da_true, mean_dims=xr.ALL_DIMS):
     Returns:
         acc: Latitude weighted acc
     """
+
     clim = da_true.mean('time')
     try:
         t = np.intersect1d(da_fc.time, da_true.time)

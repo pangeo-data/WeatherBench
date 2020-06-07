@@ -27,6 +27,8 @@ The data is hosted [here](https://mediatum.ub.tum.de/1524895) with the following
 |   |-- 2m_temperature
 |   |-- constants
 |   |-- geopotential
+|   |-- old
+|   |   `-- temperature
 |   |-- potential_vorticity
 |   |-- relative_humidity
 |   |-- specific_humidity
@@ -73,14 +75,36 @@ The data is hosted [here](https://mediatum.ub.tum.de/1524895) with the following
 |   `-- vorticity
 |-- baselines
 |   `-- saved_models
+|-- CMIP
+|   `-- MPI-ESM
+|       |-- 2.8125deg
+|       |   |-- geopotential
+|       |   |-- specific_humidity
+|       |   |-- temperature
+|       |   |-- u_component_of_wind
+|       |   `-- v_component_of_wind
+|       `-- 5.625deg
+|           |-- geopotential
+|           |-- specific_humidity
+|           |-- temperature
+|           |-- u_component_of_wind
+|           `-- v_component_of_wind
 |-- IFS_T42
 |   `-- raw
 |-- IFS_T63
 |   `-- raw
 `-- tigge
     |-- 1.40625deg
+    |   |-- geopotential_500
+    |   `-- temperature_850
     |-- 2.8125deg
+    |   |-- geopotential_500
+    |   `-- temperature_850
     `-- 5.625deg
+        |-- 2m_temperature
+        |-- geopotential_500
+        |-- temperature_850
+        `-- total_precipitation
 ```
 
 To start out download either the entire 5.625 degree data (175G) using 
@@ -145,7 +169,11 @@ To obtain the operational IFS baseline, we use the [TIGGE Archive](https://confl
 ### Regridding the T21 IFS baseline
 
 The T21 baseline was created by Peter Dueben. The raw output can be found in the dataset. To regrid the data `scripts
-/convert_and_regrid_tigge.sh` was used.
+/convert_and_regrid_IFS_TXX.sh` was used.
+
+### Downloading and regridding CMIP historical climate model data.
+
+To download historical climate model data use the Snakemake file in `snakemake_configs_CMIP`. Here, we downloaded data from the `MIP-ESM-HR` model. To download other models, search for the download links on the CMIP website and modify the scripts accordingly.
 
 ### Extracting single levels from 3D files
 
