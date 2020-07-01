@@ -11,6 +11,14 @@ If you are using this dataset please cite
 This repository contains all the code for downloding and processing the data as well as code for the baseline models
  in the paper.
  
+ ---
+ *Note!
+ The data has been changed from the original release. Here is a list of changes:*
+ - *New vertical levels. Used to be [1, 10, 100, 200, 300, 400, 500, 600, 700, 850,
+1000], now is [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000]. This is to be compatible with CMIP output. The new levels include all of the old ones with the exception of [1, 10].*
+- *CMIP data. Regridded CMIP data of some variables was added. This is the historical simulation of the MPI-ESM-HR model.*
+ ---
+ 
 If you have any questions about this dataset, please use the [Github Issue](https://github.com/pangeo-data/WeatherBench/issues) feature on this page! 
 
 ## Leaderboard
