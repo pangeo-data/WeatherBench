@@ -28,6 +28,7 @@ If you have any questions about this dataset, please use the [Github Issue](http
 | Rasp and Thuerey 2020 (direct/continuous) | **268 / 499** | **1.65 / 2.41** | Resnet with CMIP pretraining (5.625 deg) | [Rasp and Thuerey 2020](http://arxiv.org/abs/2008.08626) |
 | IFS T63 | 268 / 463 | 1.85 / 2.52 | Lower resolution physical model (approx. 1.9 deg) | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
 | Weyn et al. 2020 (iterative) | **373 / 611** | **1.98 / 2.87** | UNet with cube-sphere mapping (2 deg) | [Weyn et al. 2020](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2020MS002109) |
+| Clare et al. 2021 (direct) | **375 / 627** | **2.11 / 2.91** | Stacked ResNets with probabilistic output (5.625 deg) | [Clare et al. 2021](https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/qj.4180) |
 | IFS T42 | 489 / 743 | 3.09 / 3.83 |Lower resolution physical model (approx. 2.8 deg)  | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
 | Weekly climatology | 816 | 3.50 | Climatology for each calendar week | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
 | Persistence | 936 / 1033 | 4.23 / 4.56 |  | [Rasp et al. 2020](https://arxiv.org/abs/2002.00469) |
