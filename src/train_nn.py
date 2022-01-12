@@ -44,6 +44,8 @@ class DataGenerator(keras.utils.Sequence):
                 data.append(ds[var].sel(level=levels))
             except ValueError:
                 data.append(ds[var].expand_dims({'level': generic_level}, 1))
+            except KeyError:
+                data.append(ds[var])
 
         self.data = xr.concat(data, 'level').transpose('time', 'lat', 'lon', 'level')
         self.mean = self.data.mean(('time', 'lat', 'lon')).compute() if mean is None else mean

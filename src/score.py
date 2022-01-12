@@ -17,10 +17,13 @@ def load_test_data(path, var, years=slice('2017', '2018')):
     """
     ds = xr.open_mfdataset(f'{path}/*.nc', combine='by_coords')[var]
     if var in ['z', 't']:
-        try:
-            ds = ds.sel(level=500 if var == 'z' else 850).drop('level')
-        except ValueError:
-            ds = ds.drop('level')
+        if len(ds["level"].dims) > 0:
+            try:
+                ds = ds.sel(level=500 if var == 'z' else 850) .drop('level')
+            except ValueError:
+                ds = ds.drop('level')
+        else:
+            assert ds["level"].values == 500 if var == 'z' else ds["level"].values == 850
     return ds.sel(time=years)
 
 def compute_weighted_rmse(da_fc, da_true, mean_dims=xr.ALL_DIMS):
