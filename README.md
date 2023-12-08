@@ -1,6 +1,8 @@
 ![Logo](https://github.com/ai4environment/WeatherBench/blob/master/figures/logo_text_left.png?raw=true)
 # WeatherBench: A benchmark dataset for data-driven weather forecasting
 
+**🚨🚨🚨 [WeatherBench 2](https://github.com/google-research/weatherbench2) has been released. It provides an updated and much improved benchmark including more comprehensive and more easily accessible datasets.🚨🚨🚨**
+
 [![Binder](https://binder.pangeo.io/badge_logo.svg)](https://binder.pangeo.io/v2/gh/pangeo-data/WeatherBench/master?filepath=quickstart.ipynb)
 
 If you are using this dataset please cite 
